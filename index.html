@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Rosenfeld - Performance Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .navbar h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar .subtitle {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .section {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #f1f5f9;
+        }
+
+        .section-subtitle {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* Executive Summary Cards */
+        .exec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .exec-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .exec-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(96, 165, 250, 0.2);
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+
+        .exec-card-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .exec-card-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .exec-card-value.profit {
+            color: #10b981;
+        }
+
+        .exec-card-value.loss {
+            color: #ef4444;
+        }
+
+        .exec-card-subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .chart-container canvas {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .data-table thead {
+            background: rgba(15, 23, 42, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table th {
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #f1f5f9;
+            border-bottom: 2px solid rgba(96, 165, 250, 0.3);
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .data-table tr:hover {
+            background: rgba(96, 165, 250, 0.05);
+        }
+
+        .pair-name {
+            font-weight: 600;
+            color: #60a5fa;
+        }
+
+        .profit {
+            color: #10b981 !important;
+            font-weight: 600;
+        }
+
+        .loss {
+            color: #ef4444 !important;
+            font-weight: 600;
+        }
+
+        /* Export Button */
+        .export-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .export-btn span {
+            display: inline-block;
+        }
+
+        /* Detailed Analysis Cards */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .analysis-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(96, 165, 250, 0.2);
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+
+        .analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .pair-name-large {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #60a5fa;
+            margin: 0;
+        }
+
+        .risk-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-badge.profit {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .risk-badge.neutral {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+
+        .risk-badge.loss {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .analysis-metrics {
+            margin-bottom: 20px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .metric-value.profit {
+            color: #10b981;
+        }
+
+        .metric-value.loss {
+            color: #ef4444;
+        }
+
+        .analysis-insight {
+            background: rgba(96, 165, 250, 0.05);
+            border-left: 3px solid #60a5fa;
+            padding: 14px;
+            border-radius: 6px;
+            margin-top: 16px;
+        }
+
+        .analysis-insight p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin: 0;
+            font-style: italic;
+        }
+
+        /* ============================================ */
+        /* MOBILE RESPONSIVE DESIGN */
+        /* ============================================ */
+
+        @media (max-width: 768px) {
+            /* Container and padding adjustments */
+            .container {
+                padding: 16px;
+            }
+
+            .navbar {
+                padding: 16px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .navbar h1 {
+                font-size: 1.3rem;
+            }
+
+            .navbar .subtitle {
+                font-size: 0.8rem;
+            }
+
+            .navbar .export-btn {
+                width: 100%;
+                margin-top: 8px;
+            }
+
+            /* Section spacing */
+            .section {
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 12px;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+
+            .section-subtitle {
+                font-size: 0.85rem;
+            }
+
+            /* Executive cards - stack in single column */
+            .exec-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .exec-card {
+                padding: 16px;
+            }
+
+            .exec-card-value {
+                font-size: 1.6rem;
+            }
+
+            .exec-card-label {
+                font-size: 0.75rem;
+            }
+
+            .exec-card-subtitle {
+                font-size: 0.75rem;
+            }
+
+            /* Chart container */
+            .chart-container {
+                height: 300px;
+                margin: 16px 0;
+            }
+
+            /* Tables - horizontal scroll */
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .data-table {
+                font-size: 0.75rem;
+                min-width: 100%;
+            }
+
+            .data-table th {
+                padding: 10px 8px;
+                font-size: 0.7rem;
+            }
+
+            .data-table td {
+                padding: 8px 6px;
+                font-size: 0.75rem;
+            }
+
+            /* Analysis grid - single column */
+            .analysis-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .analysis-card {
+                padding: 16px;
+            }
+
+            .pair-name-large {
+                font-size: 1.3rem;
+            }
+
+            .risk-badge {
+                font-size: 0.65rem;
+                padding: 4px 10px;
+            }
+
+            .metric-row {
+                font-size: 0.85rem;
+            }
+
+            .metric-label {
+                font-size: 0.75rem;
+            }
+
+            .metric-value {
+                font-size: 0.9rem;
+            }
+
+            .analysis-insight {
+                padding: 10px;
+            }
+
+            .analysis-insight p {
+                font-size: 0.8rem;
+            }
+
+            /* Export button */
+            .export-btn {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .navbar h1 {
+                font-size: 1.1rem;
+            }
+
+            .navbar .subtitle {
+                font-size: 0.7rem;
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .exec-card-value {
+                font-size: 1.4rem;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 6px 4px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Print media for PDF generation */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .navbar {
+                background: rgba(15, 23, 42, 1);
+                position: relative;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+
+            .analysis-card {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="navbar">
+        <div>
+            <h1>Trader Rosenfeld - Executive Dashboard</h1>
+            <div class="subtitle">Generated on 2026-01-11 08:33 | Trades since 2026-01-04</div>
+        </div>
+        <button class="export-btn" onclick="window.print()" style="margin: 0;">
+            <span>🖨️ Export PDF</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <!-- Executive Summary -->
+        <div class="section">
+            <div class="section-title">Executive Summary</div>
+            <div class="section-subtitle">Cumulative performance since trading started</div>
+
+            <div class="exec-grid">
+                <div class="exec-card">
+                    <div class="exec-card-label">Total Trades</div>
+                    <div class="exec-card-value">68</div>
+                    <div class="exec-card-subtitle">Closed positions</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Win Rate</div>
+                    <div class="exec-card-value loss">4.4%</div>
+                    <div class="exec-card-subtitle">3 TPs vs 65 SLs</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Total P&L</div>
+                    <div class="exec-card-value loss">$-46.01</div>
+                    <div class="exec-card-subtitle">Cumulative net profit</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Profit Factor</div>
+                    <div class="exec-card-value">0.41</div>
+                    <div class="exec-card-subtitle">Wins/losses ratio</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Avg Win</div>
+                    <div class="exec-card-value profit">$10.47</div>
+                    <div class="exec-card-subtitle">Average TP profit</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Avg Loss</div>
+                    <div class="exec-card-value loss">$-1.19</div>
+                    <div class="exec-card-subtitle">Average SL loss</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Best Trade</div>
+                    <div class="exec-card-value profit">$11.06</div>
+                    <div class="exec-card-subtitle">Largest win</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Worst Trade</div>
+                    <div class="exec-card-value loss">$-1.68</div>
+                    <div class="exec-card-subtitle">Largest loss</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equity Curve -->
+        <div class="section">
+            <div class="section-title">Equity Curve</div>
+            <div class="section-subtitle">Cumulative P&L evolution over time</div>
+            <div class="chart-container">
+                <canvas id="equityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Performance by Pair -->
+        <div class="section">
+            <div class="section-title">Performance by Pair</div>
+            <div class="section-subtitle">Results breakdown by currency pair</div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Pair</th>
+                        <th>Total Trades</th>
+                        <th>TPs</th>
+                        <th>SLs</th>
+                        <th>Win Rate</th>
+                        <th>P&L</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <td class="pair-name">EURGBP</td>
+                        <td>12</td>
+                        <td class="profit">0</td>
+                        <td class="loss">12</td>
+                        <td>0.0%</td>
+                        <td class="loss">$-8.84</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="pair-name">EURJPY</td>
+                        <td>6</td>
+                        <td class="profit">0</td>
+                        <td class="loss">6</td>
+                        <td>0.0%</td>
+                        <td class="loss">$-7.48</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="pair-name">EURUSD</td>
+                        <td>16</td>
+                        <td class="profit">0</td>
+                        <td class="loss">16</td>
+                        <td>0.0%</td>
+                        <td class="loss">$-18.63</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="pair-name">GBPJPY</td>
+                        <td>9</td>
+                        <td class="profit">0</td>
+                        <td class="loss">9</td>
+                        <td>0.0%</td>
+                        <td class="loss">$-13.05</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="pair-name">GBPUSD</td>
+                        <td>19</td>
+                        <td class="profit">0</td>
+                        <td class="loss">19</td>
+                        <td>0.0%</td>
+                        <td class="loss">$-26.17</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="pair-name">USDJPY</td>
+                        <td>6</td>
+                        <td class="profit">3</td>
+                        <td class="loss">3</td>
+                        <td>50.0%</td>
+                        <td class="profit">$28.16</td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Detailed Analysis by Pair -->
+        <div class="section">
+            <div class="section-title">Detailed Analysis by Pair</div>
+            <div class="section-subtitle">Strategic insights and risk metrics</div>
+
+            <div class="analysis-grid">
+                
+                <div class="analysis-card">
+                    <div class="analysis-header">
+                        <h3 class="pair-name-large">EURGBP</h3>
+                        <div class="risk-badge loss">High Risk</div>
+                    </div>
+
+                    <div class="analysis-metrics">
+                        <div class="metric-row">
+                            <span class="metric-label">Annual Return:</span>
+                            <span class="metric-value loss">-80.7%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Profit Factor:</span>
+                            <span class="metric-value">0.00</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Win Rate:</span>
+                            <span class="metric-value">0.0%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Max Drawdown:</span>
+                            <span class="metric-value loss">0.9%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Total Trades:</span>
+                            <span class="metric-value">12</span>
+                        </div>
+                    </div>
+
+                    <div class="analysis-insight">
+                        <p>Significant losses accumulated. High-risk pair requiring immediate attention.</p>
+                    </div>
+                </div>
+                
+                <div class="analysis-card">
+                    <div class="analysis-header">
+                        <h3 class="pair-name-large">EURJPY</h3>
+                        <div class="risk-badge loss">High Risk</div>
+                    </div>
+
+                    <div class="analysis-metrics">
+                        <div class="metric-row">
+                            <span class="metric-label">Annual Return:</span>
+                            <span class="metric-value loss">-68.3%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Profit Factor:</span>
+                            <span class="metric-value">0.00</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Win Rate:</span>
+                            <span class="metric-value">0.0%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Max Drawdown:</span>
+                            <span class="metric-value loss">0.7%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Total Trades:</span>
+                            <span class="metric-value">6</span>
+                        </div>
+                    </div>
+
+                    <div class="analysis-insight">
+                        <p>Significant losses accumulated. High-risk pair requiring immediate attention.</p>
+                    </div>
+                </div>
+                
+                <div class="analysis-card">
+                    <div class="analysis-header">
+                        <h3 class="pair-name-large">EURUSD</h3>
+                        <div class="risk-badge loss">High Risk</div>
+                    </div>
+
+                    <div class="analysis-metrics">
+                        <div class="metric-row">
+                            <span class="metric-label">Annual Return:</span>
+                            <span class="metric-value loss">-170.0%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Profit Factor:</span>
+                            <span class="metric-value">0.00</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Win Rate:</span>
+                            <span class="metric-value">0.0%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Max Drawdown:</span>
+                            <span class="metric-value loss">1.9%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Total Trades:</span>
+                            <span class="metric-value">16</span>
+                        </div>
+                    </div>
+
+                    <div class="analysis-insight">
+                        <p>Significant losses accumulated. High-risk pair requiring immediate attention.</p>
+                    </div>
+                </div>
+                
+                <div class="analysis-card">
+                    <div class="analysis-header">
+                        <h3 class="pair-name-large">GBPJPY</h3>
+                        <div class="risk-badge loss">High Risk</div>
+                    </div>
+
+                    <div class="analysis-metrics">
+                        <div class="metric-row">
+                            <span class="metric-label">Annual Return:</span>
+                            <span class="metric-value loss">-119.1%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Profit Factor:</span>
+                            <span class="metric-value">0.00</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Win Rate:</span>
+                            <span class="metric-value">0.0%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Max Drawdown:</span>
+                            <span class="metric-value loss">1.3%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Total Trades:</span>
+                            <span class="metric-value">9</span>
+                        </div>
+                    </div>
+
+                    <div class="analysis-insight">
+                        <p>Significant losses accumulated. High-risk pair requiring immediate attention.</p>
+                    </div>
+                </div>
+                
+                <div class="analysis-card">
+                    <div class="analysis-header">
+                        <h3 class="pair-name-large">GBPUSD</h3>
+                        <div class="risk-badge loss">High Risk</div>
+                    </div>
+
+                    <div class="analysis-metrics">
+                        <div class="metric-row">
+                            <span class="metric-label">Annual Return:</span>
+                            <span class="metric-value loss">-238.8%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Profit Factor:</span>
+                            <span class="metric-value">0.00</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Win Rate:</span>
+                            <span class="metric-value">0.0%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Max Drawdown:</span>
+                            <span class="metric-value loss">2.6%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Total Trades:</span>
+                            <span class="metric-value">19</span>
+                        </div>
+                    </div>
+
+                    <div class="analysis-insight">
+                        <p>Significant losses accumulated. High-risk pair requiring immediate attention.</p>
+                    </div>
+                </div>
+                
+                <div class="analysis-card">
+                    <div class="analysis-header">
+                        <h3 class="pair-name-large">USDJPY</h3>
+                        <div class="risk-badge profit">Low Risk</div>
+                    </div>
+
+                    <div class="analysis-metrics">
+                        <div class="metric-row">
+                            <span class="metric-label">Annual Return:</span>
+                            <span class="metric-value profit">257.0%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Profit Factor:</span>
+                            <span class="metric-value">9.69</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Win Rate:</span>
+                            <span class="metric-value">50.0%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Max Drawdown:</span>
+                            <span class="metric-value loss">0.3%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Total Trades:</span>
+                            <span class="metric-value">6</span>
+                        </div>
+                    </div>
+
+                    <div class="analysis-insight">
+                        <p>Strong performer with healthy profit factor. USDJPY shows consistent execution.</p>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Trade Log -->
+        <div class="section">
+            <div class="section-title">Trade History</div>
+            <div class="section-subtitle">Last 200 trades (most recent first)</div>
+
+            <button class="export-btn" onclick="exportToExcel()">
+                <span>📊 Export Excel (All Trades)</span>
+            </button>
+
+            <div class="table-wrapper">
+                <table class="data-table" id="tradesTable">
+                    <thead>
+                        <tr>
+                            <th>Ticket</th>
+                            <th>Pair</th>
+                            <th>Type</th>
+                            <th>Opening (GMT+0)</th>
+                            <th>Closing (GMT+0)</th>
+                            <th>Duration</th>
+                            <th>EMA 200</th>
+                            <th>Trend</th>
+                            <th>RSI 14</th>
+                            <th>ATR 14</th>
+                            <th>Result</th>
+                            <th>P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td>354872250</td>
+                            <td class="pair-name">USDJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 04:00:55</td>
+                            <td>2026-01-09 12:15:30</td>
+                            <td>32h14m</td>
+                            <td>155.90810</td>
+                            <td>Alta</td>
+                            <td>49.03</td>
+                            <td>0.31338</td>
+                            <td class="profit">TP</td>
+                            <td class="profit">$9.85</td>
+                        </tr>
+                        <tr>
+                            <td>357233217</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-09 12:01:16</td>
+                            <td>2026-01-09 12:10:12</td>
+                            <td>0h8m</td>
+                            <td>1.16899</td>
+                            <td>Alta</td>
+                            <td>28.77</td>
+                            <td>0.00195</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.09</td>
+                        </tr>
+                        <tr>
+                            <td>356797916</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-09 08:01:13</td>
+                            <td>2026-01-09 12:06:08</td>
+                            <td>4h4m</td>
+                            <td>1.33924</td>
+                            <td>Alta</td>
+                            <td>32.99</td>
+                            <td>0.00254</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.37</td>
+                        </tr>
+                        <tr>
+                            <td>357233229</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-09 12:01:16</td>
+                            <td>2026-01-09 12:05:55</td>
+                            <td>0h4m</td>
+                            <td>1.33915</td>
+                            <td>Alta</td>
+                            <td>34.10</td>
+                            <td>0.00282</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.51</td>
+                        </tr>
+                        <tr>
+                            <td>353168318</td>
+                            <td class="pair-name">USDJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 04:01:37</td>
+                            <td>2026-01-09 11:32:23</td>
+                            <td>55h30m</td>
+                            <td>155.82422</td>
+                            <td>Alta</td>
+                            <td>44.26</td>
+                            <td>0.33336</td>
+                            <td class="profit">TP</td>
+                            <td class="profit">$10.49</td>
+                        </tr>
+                        <tr>
+                            <td>350756735</td>
+                            <td class="pair-name">USDJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-05 16:00:57</td>
+                            <td>2026-01-09 11:13:28</td>
+                            <td>91h12m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="profit">TP</td>
+                            <td class="profit">$11.06</td>
+                        </tr>
+                        <tr>
+                            <td>355816658</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 16:01:03</td>
+                            <td>2026-01-09 10:30:01</td>
+                            <td>18h28m</td>
+                            <td>1.16933</td>
+                            <td>Alta</td>
+                            <td>29.66</td>
+                            <td>0.00196</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.06</td>
+                        </tr>
+                        <tr>
+                            <td>356797906</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-09 08:01:13</td>
+                            <td>2026-01-09 10:30:01</td>
+                            <td>2h28m</td>
+                            <td>1.16915</td>
+                            <td>Alta</td>
+                            <td>31.75</td>
+                            <td>0.00184</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.60</td>
+                        </tr>
+                        <tr>
+                            <td>356597573</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-09 04:01:11</td>
+                            <td>2026-01-09 07:24:09</td>
+                            <td>3h22m</td>
+                            <td>1.16919</td>
+                            <td>Alta</td>
+                            <td>32.23</td>
+                            <td>0.00180</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.98</td>
+                        </tr>
+                        <tr>
+                            <td>355816659</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 16:01:04</td>
+                            <td>2026-01-09 06:46:37</td>
+                            <td>14h45m</td>
+                            <td>1.33914</td>
+                            <td>Alta</td>
+                            <td>35.54</td>
+                            <td>0.00268</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.44</td>
+                        </tr>
+                        <tr>
+                            <td>356597577</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-09 04:01:11</td>
+                            <td>2026-01-09 05:46:17</td>
+                            <td>1h45m</td>
+                            <td>1.33918</td>
+                            <td>Alta</td>
+                            <td>36.67</td>
+                            <td>0.00243</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.32</td>
+                        </tr>
+                        <tr>
+                            <td>355447913</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 12:01:01</td>
+                            <td>2026-01-09 04:19:13</td>
+                            <td>16h18m</td>
+                            <td>1.33908</td>
+                            <td>Alta</td>
+                            <td>37.66</td>
+                            <td>0.00270</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.45</td>
+                        </tr>
+                        <tr>
+                            <td>356345047</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-09 00:01:08</td>
+                            <td>2026-01-09 04:14:55</td>
+                            <td>4h13m</td>
+                            <td>1.16930</td>
+                            <td>Alta</td>
+                            <td>34.39</td>
+                            <td>0.00186</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.02</td>
+                        </tr>
+                        <tr>
+                            <td>356345059</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-09 00:01:08</td>
+                            <td>2026-01-09 04:14:41</td>
+                            <td>4h13m</td>
+                            <td>1.33926</td>
+                            <td>Alta</td>
+                            <td>38.39</td>
+                            <td>0.00251</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.36</td>
+                        </tr>
+                        <tr>
+                            <td>353168321</td>
+                            <td class="pair-name">EURJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 04:01:38</td>
+                            <td>2026-01-08 14:24:26</td>
+                            <td>34h22m</td>
+                            <td>182.25585</td>
+                            <td>Alta</td>
+                            <td>33.77</td>
+                            <td>0.33765</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.23</td>
+                        </tr>
+                        <tr>
+                            <td>355447884</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 12:01:00</td>
+                            <td>2026-01-08 13:24:00</td>
+                            <td>1h23m</td>
+                            <td>1.16934</td>
+                            <td>Alta</td>
+                            <td>34.74</td>
+                            <td>0.00192</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.04</td>
+                        </tr>
+                        <tr>
+                            <td>354288586</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 20:00:49</td>
+                            <td>2026-01-08 10:45:01</td>
+                            <td>14h44m</td>
+                            <td>1.16951</td>
+                            <td>Alta</td>
+                            <td>38.56</td>
+                            <td>0.00211</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.13</td>
+                        </tr>
+                        <tr>
+                            <td>355104781</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 08:00:58</td>
+                            <td>2026-01-08 10:33:44</td>
+                            <td>2h32m</td>
+                            <td>1.33908</td>
+                            <td>Alta</td>
+                            <td>41.07</td>
+                            <td>0.00264</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.42</td>
+                        </tr>
+                        <tr>
+                            <td>355104776</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-08 08:00:58</td>
+                            <td>2026-01-08 10:05:18</td>
+                            <td>2h4m</td>
+                            <td>0.87324</td>
+                            <td>Baixa</td>
+                            <td>54.03</td>
+                            <td>0.00099</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.67</td>
+                        </tr>
+                        <tr>
+                            <td>354586241</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 00:00:52</td>
+                            <td>2026-01-08 05:38:04</td>
+                            <td>5h37m</td>
+                            <td>1.16944</td>
+                            <td>Alta</td>
+                            <td>40.03</td>
+                            <td>0.00202</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.09</td>
+                        </tr>
+                        <tr>
+                            <td>354586248</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 00:00:52</td>
+                            <td>2026-01-08 05:00:54</td>
+                            <td>5h0m</td>
+                            <td>1.33894</td>
+                            <td>Alta</td>
+                            <td>42.41</td>
+                            <td>0.00276</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.48</td>
+                        </tr>
+                        <tr>
+                            <td>354288592</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 20:00:50</td>
+                            <td>2026-01-08 05:00:34</td>
+                            <td>8h59m</td>
+                            <td>1.33891</td>
+                            <td>Alta</td>
+                            <td>42.77</td>
+                            <td>0.00290</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.55</td>
+                        </tr>
+                        <tr>
+                            <td>354872254</td>
+                            <td class="pair-name">EURJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 04:00:55</td>
+                            <td>2026-01-08 04:59:41</td>
+                            <td>0h58m</td>
+                            <td>182.32776</td>
+                            <td>Alta</td>
+                            <td>39.27</td>
+                            <td>0.32994</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.21</td>
+                        </tr>
+                        <tr>
+                            <td>354872259</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 04:00:55</td>
+                            <td>2026-01-08 04:59:26</td>
+                            <td>0h58m</td>
+                            <td>1.33905</td>
+                            <td>Alta</td>
+                            <td>43.29</td>
+                            <td>0.00268</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.44</td>
+                        </tr>
+                        <tr>
+                            <td>354872255</td>
+                            <td class="pair-name">GBPJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 04:00:55</td>
+                            <td>2026-01-08 04:53:38</td>
+                            <td>0h52m</td>
+                            <td>208.77096</td>
+                            <td>Alta</td>
+                            <td>40.51</td>
+                            <td>0.39686</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.41</td>
+                        </tr>
+                        <tr>
+                            <td>354586246</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-08 00:00:52</td>
+                            <td>2026-01-08 04:32:53</td>
+                            <td>4h32m</td>
+                            <td>0.87334</td>
+                            <td>Baixa</td>
+                            <td>49.86</td>
+                            <td>0.00100</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.67</td>
+                        </tr>
+                        <tr>
+                            <td>354872257</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-08 04:00:55</td>
+                            <td>2026-01-08 04:31:55</td>
+                            <td>0h31m</td>
+                            <td>0.87327</td>
+                            <td>Baixa</td>
+                            <td>49.72</td>
+                            <td>0.00097</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.66</td>
+                        </tr>
+                        <tr>
+                            <td>350032601</td>
+                            <td class="pair-name">GBPJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-05 08:00:53</td>
+                            <td>2026-01-08 03:18:36</td>
+                            <td>67h17m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.51</td>
+                        </tr>
+                        <tr>
+                            <td>354288585</td>
+                            <td class="pair-name">GBPJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 20:00:49</td>
+                            <td>2026-01-08 03:15:10</td>
+                            <td>7h14m</td>
+                            <td>208.71705</td>
+                            <td>Alta</td>
+                            <td>42.15</td>
+                            <td>0.40162</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.46</td>
+                        </tr>
+                        <tr>
+                            <td>354288587</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-07 20:00:49</td>
+                            <td>2026-01-08 02:12:12</td>
+                            <td>6h11m</td>
+                            <td>0.87341</td>
+                            <td>Baixa</td>
+                            <td>46.61</td>
+                            <td>0.00104</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.70</td>
+                        </tr>
+                        <tr>
+                            <td>354586238</td>
+                            <td class="pair-name">GBPJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-08 00:00:52</td>
+                            <td>2026-01-08 02:08:25</td>
+                            <td>2h7m</td>
+                            <td>208.74341</td>
+                            <td>Alta</td>
+                            <td>46.25</td>
+                            <td>0.39401</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.40</td>
+                        </tr>
+                        <tr>
+                            <td>354081047</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-07 16:01:46</td>
+                            <td>2026-01-07 23:32:09</td>
+                            <td>7h30m</td>
+                            <td>0.87347</td>
+                            <td>Baixa</td>
+                            <td>45.23</td>
+                            <td>0.00109</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.74</td>
+                        </tr>
+                        <tr>
+                            <td>354081046</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 16:01:46</td>
+                            <td>2026-01-07 23:21:07</td>
+                            <td>7h19m</td>
+                            <td>1.16952</td>
+                            <td>Alta</td>
+                            <td>40.26</td>
+                            <td>0.00216</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.16</td>
+                        </tr>
+                        <tr>
+                            <td>354081051</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 16:01:47</td>
+                            <td>2026-01-07 22:37:10</td>
+                            <td>6h35m</td>
+                            <td>1.33885</td>
+                            <td>Alta</td>
+                            <td>44.82</td>
+                            <td>0.00297</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.57</td>
+                        </tr>
+                        <tr>
+                            <td>354081045</td>
+                            <td class="pair-name">GBPJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 16:01:46</td>
+                            <td>2026-01-07 20:00:01</td>
+                            <td>3h58m</td>
+                            <td>208.69184</td>
+                            <td>Alta</td>
+                            <td>45.82</td>
+                            <td>0.40405</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.43</td>
+                        </tr>
+                        <tr>
+                            <td>353713563</td>
+                            <td class="pair-name">GBPJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 12:01:43</td>
+                            <td>2026-01-07 14:09:48</td>
+                            <td>2h8m</td>
+                            <td>208.65629</td>
+                            <td>Alta</td>
+                            <td>49.81</td>
+                            <td>0.40553</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.47</td>
+                        </tr>
+                        <tr>
+                            <td>353713585</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 12:01:44</td>
+                            <td>2026-01-07 12:15:46</td>
+                            <td>0h14m</td>
+                            <td>1.33882</td>
+                            <td>Alta</td>
+                            <td>49.84</td>
+                            <td>0.00300</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.60</td>
+                        </tr>
+                        <tr>
+                            <td>353713575</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-07 12:01:44</td>
+                            <td>2026-01-07 12:11:27</td>
+                            <td>0h9m</td>
+                            <td>0.87353</td>
+                            <td>Baixa</td>
+                            <td>36.96</td>
+                            <td>0.00106</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.71</td>
+                        </tr>
+                        <tr>
+                            <td>353354073</td>
+                            <td class="pair-name">USDJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 08:01:40</td>
+                            <td>2026-01-07 10:42:24</td>
+                            <td>2h40m</td>
+                            <td>155.83793</td>
+                            <td>Alta</td>
+                            <td>49.12</td>
+                            <td>0.32142</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.09</td>
+                        </tr>
+                        <tr>
+                            <td>353354098</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 08:01:41</td>
+                            <td>2026-01-07 10:14:55</td>
+                            <td>2h13m</td>
+                            <td>1.33864</td>
+                            <td>Alta</td>
+                            <td>50.88</td>
+                            <td>0.00305</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.63</td>
+                        </tr>
+                        <tr>
+                            <td>353354080</td>
+                            <td class="pair-name">GBPJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 08:01:40</td>
+                            <td>2026-01-07 10:07:35</td>
+                            <td>2h5m</td>
+                            <td>208.61239</td>
+                            <td>Alta</td>
+                            <td>50.34</td>
+                            <td>0.40347</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.42</td>
+                        </tr>
+                        <tr>
+                            <td>352363644</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-06 16:01:11</td>
+                            <td>2026-01-07 09:27:39</td>
+                            <td>17h26m</td>
+                            <td>0.87393</td>
+                            <td>Baixa</td>
+                            <td>27.59</td>
+                            <td>0.00120</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.81</td>
+                        </tr>
+                        <tr>
+                            <td>352650338</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-06 21:33:34</td>
+                            <td>2026-01-07 09:26:47</td>
+                            <td>11h53m</td>
+                            <td>0.87376</td>
+                            <td>Baixa</td>
+                            <td>29.13</td>
+                            <td>0.00109</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.74</td>
+                        </tr>
+                        <tr>
+                            <td>353354092</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-07 08:01:41</td>
+                            <td>2026-01-07 09:26:47</td>
+                            <td>1h25m</td>
+                            <td>0.87363</td>
+                            <td>Baixa</td>
+                            <td>29.96</td>
+                            <td>0.00105</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.70</td>
+                        </tr>
+                        <tr>
+                            <td>352882794</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-07 00:01:35</td>
+                            <td>2026-01-07 06:15:09</td>
+                            <td>6h13m</td>
+                            <td>0.87376</td>
+                            <td>Baixa</td>
+                            <td>28.07</td>
+                            <td>0.00111</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.74</td>
+                        </tr>
+                        <tr>
+                            <td>352650344</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-06 21:33:34</td>
+                            <td>2026-01-07 05:25:00</td>
+                            <td>7h51m</td>
+                            <td>1.33855</td>
+                            <td>Alta</td>
+                            <td>52.03</td>
+                            <td>0.00308</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.68</td>
+                        </tr>
+                        <tr>
+                            <td>352363632</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-06 16:01:11</td>
+                            <td>2026-01-07 05:15:41</td>
+                            <td>13h14m</td>
+                            <td>1.16968</td>
+                            <td>Alta</td>
+                            <td>39.61</td>
+                            <td>0.00239</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.28</td>
+                        </tr>
+                        <tr>
+                            <td>353168323</td>
+                            <td class="pair-name">GBPJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-07 04:01:38</td>
+                            <td>2026-01-07 05:07:01</td>
+                            <td>1h5m</td>
+                            <td>208.58966</td>
+                            <td>Alta</td>
+                            <td>49.24</td>
+                            <td>0.40673</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.44</td>
+                        </tr>
+                        <tr>
+                            <td>352363668</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-06 16:01:11</td>
+                            <td>2026-01-07 05:02:37</td>
+                            <td>13h1m</td>
+                            <td>1.33832</td>
+                            <td>Alta</td>
+                            <td>51.65</td>
+                            <td>0.00341</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.12</td>
+                        </tr>
+                        <tr>
+                            <td>352650335</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-06 21:33:33</td>
+                            <td>2026-01-07 04:50:42</td>
+                            <td>7h17m</td>
+                            <td>1.16965</td>
+                            <td>Alta</td>
+                            <td>40.45</td>
+                            <td>0.00217</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.17</td>
+                        </tr>
+                        <tr>
+                            <td>350399257</td>
+                            <td class="pair-name">EURJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-05 12:00:55</td>
+                            <td>2026-01-07 02:05:04</td>
+                            <td>38h4m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.32</td>
+                        </tr>
+                        <tr>
+                            <td>351993544</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-06 12:01:08</td>
+                            <td>2026-01-06 13:06:29</td>
+                            <td>1h5m</td>
+                            <td>0.87401</td>
+                            <td>Baixa</td>
+                            <td>26.19</td>
+                            <td>0.00126</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.85</td>
+                        </tr>
+                        <tr>
+                            <td>351993526</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-06 12:01:08</td>
+                            <td>2026-01-06 12:14:53</td>
+                            <td>0h13m</td>
+                            <td>1.16969</td>
+                            <td>Alta</td>
+                            <td>44.30</td>
+                            <td>0.00236</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.26</td>
+                        </tr>
+                        <tr>
+                            <td>351993556</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-06 12:01:08</td>
+                            <td>2026-01-06 12:04:12</td>
+                            <td>0h3m</td>
+                            <td>1.33821</td>
+                            <td>Alta</td>
+                            <td>57.03</td>
+                            <td>0.00342</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.13</td>
+                        </tr>
+                        <tr>
+                            <td>351673315</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-06 08:01:05</td>
+                            <td>2026-01-06 09:55:49</td>
+                            <td>1h54m</td>
+                            <td>1.16963</td>
+                            <td>Alta</td>
+                            <td>44.81</td>
+                            <td>0.00236</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.26</td>
+                        </tr>
+                        <tr>
+                            <td>351673321</td>
+                            <td class="pair-name">EURGBP</td>
+                            <td class="loss">SELL</td>
+                            <td>2026-01-06 08:01:06</td>
+                            <td>2026-01-06 09:54:08</td>
+                            <td>1h53m</td>
+                            <td>0.87411</td>
+                            <td>Baixa</td>
+                            <td>24.66</td>
+                            <td>0.00125</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.85</td>
+                        </tr>
+                        <tr>
+                            <td>351673332</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-06 08:01:06</td>
+                            <td>2026-01-06 08:51:36</td>
+                            <td>0h50m</td>
+                            <td>1.33799</td>
+                            <td>Alta</td>
+                            <td>58.13</td>
+                            <td>0.00338</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.11</td>
+                        </tr>
+                        <tr>
+                            <td>350032594</td>
+                            <td class="pair-name">USDJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-05 08:00:52</td>
+                            <td>2026-01-05 13:30:34</td>
+                            <td>5h29m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.12</td>
+                        </tr>
+                        <tr>
+                            <td>350032598</td>
+                            <td class="pair-name">EURJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-05 08:00:53</td>
+                            <td>2026-01-05 09:27:11</td>
+                            <td>1h26m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.29</td>
+                        </tr>
+                        <tr>
+                            <td>349198604</td>
+                            <td class="pair-name">USDJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-04 20:29:44</td>
+                            <td>2026-01-05 07:45:09</td>
+                            <td>11h15m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.03</td>
+                        </tr>
+                        <tr>
+                            <td>349845760</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-05 04:00:50</td>
+                            <td>2026-01-05 06:07:47</td>
+                            <td>2h6m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.18</td>
+                        </tr>
+                        <tr>
+                            <td>349845757</td>
+                            <td class="pair-name">EURJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-05 04:00:50</td>
+                            <td>2026-01-05 05:05:04</td>
+                            <td>1h4m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.23</td>
+                        </tr>
+                        <tr>
+                            <td>349198614</td>
+                            <td class="pair-name">GBPJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-04 20:29:45</td>
+                            <td>2026-01-05 04:57:30</td>
+                            <td>8h27m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.51</td>
+                        </tr>
+                        <tr>
+                            <td>349198607</td>
+                            <td class="pair-name">EURJPY</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-04 20:29:45</td>
+                            <td>2026-01-05 00:38:31</td>
+                            <td>4h8m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.20</td>
+                        </tr>
+                        <tr>
+                            <td>349593182</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-05 00:00:48</td>
+                            <td>2026-01-05 00:23:17</td>
+                            <td>0h22m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-0.99</td>
+                        </tr>
+                        <tr>
+                            <td>349593181</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-05 00:00:47</td>
+                            <td>2026-01-05 00:23:16</td>
+                            <td>0h22m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.16</td>
+                        </tr>
+                        <tr>
+                            <td>349198621</td>
+                            <td class="pair-name">EURUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-04 20:29:45</td>
+                            <td>2026-01-04 23:02:28</td>
+                            <td>2h32m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.15</td>
+                        </tr>
+                        <tr>
+                            <td>349198627</td>
+                            <td class="pair-name">GBPUSD</td>
+                            <td class="profit">BUY</td>
+                            <td>2026-01-04 20:29:45</td>
+                            <td>2026-01-04 20:42:32</td>
+                            <td>0h12m</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td class="loss">SL</td>
+                            <td class="loss">$-1.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Trade details for tooltips (chronologically ordered)
+        const tradeDetails = [{"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.0, "open_time": "2026-01-04 20:29"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.15, "open_time": "2026-01-04 20:29"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.16, "open_time": "2026-01-05 00:00"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -0.99, "open_time": "2026-01-05 00:00"}, {"symbol": "EURJPY", "type": "BUY", "trade_pnl": -1.2, "open_time": "2026-01-04 20:29"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -1.51, "open_time": "2026-01-04 20:29"}, {"symbol": "EURJPY", "type": "BUY", "trade_pnl": -1.23, "open_time": "2026-01-05 04:00"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.18, "open_time": "2026-01-05 04:00"}, {"symbol": "USDJPY", "type": "BUY", "trade_pnl": -1.03, "open_time": "2026-01-04 20:29"}, {"symbol": "EURJPY", "type": "BUY", "trade_pnl": -1.29, "open_time": "2026-01-05 08:00"}, {"symbol": "USDJPY", "type": "BUY", "trade_pnl": -1.12, "open_time": "2026-01-05 08:00"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.11, "open_time": "2026-01-06 08:01"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.85, "open_time": "2026-01-06 08:01"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.26, "open_time": "2026-01-06 08:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.13, "open_time": "2026-01-06 12:01"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.26, "open_time": "2026-01-06 12:01"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.85, "open_time": "2026-01-06 12:01"}, {"symbol": "EURJPY", "type": "BUY", "trade_pnl": -1.32, "open_time": "2026-01-05 12:00"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.17, "open_time": "2026-01-06 21:33"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.12, "open_time": "2026-01-06 16:01"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -1.44, "open_time": "2026-01-07 04:01"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.28, "open_time": "2026-01-06 16:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.6800000000000002, "open_time": "2026-01-06 21:33"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.74, "open_time": "2026-01-07 00:01"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.74, "open_time": "2026-01-06 21:33"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.7, "open_time": "2026-01-07 08:01"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.81, "open_time": "2026-01-06 16:01"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -1.42, "open_time": "2026-01-07 08:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.63, "open_time": "2026-01-07 08:01"}, {"symbol": "USDJPY", "type": "BUY", "trade_pnl": -1.09, "open_time": "2026-01-07 08:01"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.71, "open_time": "2026-01-07 12:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.6, "open_time": "2026-01-07 12:01"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -1.47, "open_time": "2026-01-07 12:01"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -1.43, "open_time": "2026-01-07 16:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.5699999999999998, "open_time": "2026-01-07 16:01"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.16, "open_time": "2026-01-07 16:01"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.74, "open_time": "2026-01-07 16:01"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -1.4, "open_time": "2026-01-08 00:00"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.7, "open_time": "2026-01-07 20:00"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -1.46, "open_time": "2026-01-07 20:00"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -1.51, "open_time": "2026-01-05 08:00"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.66, "open_time": "2026-01-08 04:00"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.67, "open_time": "2026-01-08 00:00"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -1.41, "open_time": "2026-01-08 04:00"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.44, "open_time": "2026-01-08 04:00"}, {"symbol": "EURJPY", "type": "BUY", "trade_pnl": -1.21, "open_time": "2026-01-08 04:00"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.55, "open_time": "2026-01-07 20:00"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.48, "open_time": "2026-01-08 00:00"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.09, "open_time": "2026-01-08 00:00"}, {"symbol": "EURGBP", "type": "SELL", "trade_pnl": -0.67, "open_time": "2026-01-08 08:00"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.42, "open_time": "2026-01-08 08:00"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.13, "open_time": "2026-01-07 20:00"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.04, "open_time": "2026-01-08 12:01"}, {"symbol": "EURJPY", "type": "BUY", "trade_pnl": -1.23, "open_time": "2026-01-07 04:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.3599999999999999, "open_time": "2026-01-09 00:01"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.02, "open_time": "2026-01-09 00:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.45, "open_time": "2026-01-08 12:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.32, "open_time": "2026-01-09 04:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.44, "open_time": "2026-01-08 16:01"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -0.98, "open_time": "2026-01-09 04:01"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.06, "open_time": "2026-01-08 16:01"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.6, "open_time": "2026-01-09 08:01"}, {"symbol": "USDJPY", "type": "BUY", "trade_pnl": 11.06, "open_time": "2026-01-05 16:00"}, {"symbol": "USDJPY", "type": "BUY", "trade_pnl": 10.49, "open_time": "2026-01-07 04:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.51, "open_time": "2026-01-09 12:01"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -1.37, "open_time": "2026-01-09 08:01"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -1.09, "open_time": "2026-01-09 12:01"}, {"symbol": "USDJPY", "type": "BUY", "trade_pnl": 9.85, "open_time": "2026-01-08 04:00"}];
+
+        // Equity curve chart
+        const ctx = document.getElementById('equityChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["2026-01-04 20:42", "2026-01-04 23:02", "2026-01-05 00:23", "2026-01-05 00:23", "2026-01-05 00:38", "2026-01-05 04:57", "2026-01-05 05:05", "2026-01-05 06:07", "2026-01-05 07:45", "2026-01-05 09:27", "2026-01-05 13:30", "2026-01-06 08:51", "2026-01-06 09:54", "2026-01-06 09:55", "2026-01-06 12:04", "2026-01-06 12:14", "2026-01-06 13:06", "2026-01-07 02:05", "2026-01-07 04:50", "2026-01-07 05:02", "2026-01-07 05:07", "2026-01-07 05:15", "2026-01-07 05:25", "2026-01-07 06:15", "2026-01-07 09:26", "2026-01-07 09:26", "2026-01-07 09:27", "2026-01-07 10:07", "2026-01-07 10:14", "2026-01-07 10:42", "2026-01-07 12:11", "2026-01-07 12:15", "2026-01-07 14:09", "2026-01-07 20:00", "2026-01-07 22:37", "2026-01-07 23:21", "2026-01-07 23:32", "2026-01-08 02:08", "2026-01-08 02:12", "2026-01-08 03:15", "2026-01-08 03:18", "2026-01-08 04:31", "2026-01-08 04:32", "2026-01-08 04:53", "2026-01-08 04:59", "2026-01-08 04:59", "2026-01-08 05:00", "2026-01-08 05:00", "2026-01-08 05:38", "2026-01-08 10:05", "2026-01-08 10:33", "2026-01-08 10:45", "2026-01-08 13:24", "2026-01-08 14:24", "2026-01-09 04:14", "2026-01-09 04:14", "2026-01-09 04:19", "2026-01-09 05:46", "2026-01-09 06:46", "2026-01-09 07:24", "2026-01-09 10:30", "2026-01-09 10:30", "2026-01-09 11:13", "2026-01-09 11:32", "2026-01-09 12:05", "2026-01-09 12:06", "2026-01-09 12:10", "2026-01-09 12:15"],
+                datasets: [{
+                    label: 'Cumulative P&L',
+                    data: [-1.0, -2.15, -3.3099999999999996, -4.3, -5.5, -7.01, -8.24, -9.42, -10.45, -11.739999999999998, -12.86, -13.969999999999999, -14.819999999999999, -16.08, -17.209999999999997, -18.47, -19.32, -20.64, -21.810000000000002, -22.930000000000003, -24.370000000000005, -25.650000000000006, -27.330000000000005, -28.070000000000004, -28.810000000000002, -29.51, -30.32, -31.740000000000002, -33.370000000000005, -34.46000000000001, -35.17000000000001, -36.77000000000001, -38.24000000000001, -39.67000000000001, -41.24000000000001, -42.400000000000006, -43.14000000000001, -44.540000000000006, -45.24000000000001, -46.70000000000001, -48.21000000000001, -48.870000000000005, -49.540000000000006, -50.95, -52.39, -53.6, -55.15, -56.629999999999995, -57.72, -58.39, -59.81, -60.940000000000005, -61.980000000000004, -63.21, -64.57000000000001, -65.59, -67.04, -68.36, -69.8, -70.78, -71.84, -73.44, -62.379999999999995, -51.88999999999999, -53.39999999999999, -54.76999999999999, -55.85999999999999, -46.00999999999999],
+                    borderColor: '#60a5fa',
+                    backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#60a5fa',
+                    pointBorderColor: '#1e293b',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            color: '#e2e8f0',
+                            font: {
+                                size: 12,
+                                family: 'Inter'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#e2e8f0',
+                        borderColor: '#60a5fa',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return 'Closing: ' + context[0].label;
+                            },
+                            label: function(context) {
+                                const index = context.dataIndex;
+                                const trade = tradeDetails[index];
+                                return [
+                                    'Opening: ' + trade.open_time,
+                                    '',
+                                    'Trade: ' + trade.symbol + ' ' + trade.type,
+                                    'P&L this trade: $' + trade.trade_pnl.toFixed(2),
+                                    '',
+                                    'Cumulative P&L: $' + context.parsed.y.toFixed(2)
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#94a3b8',
+                            maxRotation: 45,
+                            minRotation: 45,
+                            autoSkip: true,
+                            maxTicksLimit: 15
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Export to Excel function
+        function exportToExcel() {
+            // Trades data (sorted newest first, with duration)
+            const allTrades = [{"Ticket": 354872250, "Pair": "USDJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 04:00:55", "Closing (GMT+0)": "2026-01-09 12:15:30", "Duration": "32h14m", "Open Price": 156.576, "Close Price": 158.133, "EMA 200": 155.9081, "Trend": "Alta", "RSI 14": 49.03, "ATR 14": 0.31338, "Result": "TP", "P&L": 9.85}, {"Ticket": 357233217, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-09 12:01:16", "Closing (GMT+0)": "2026-01-09 12:10:12", "Duration": "0h8m", "Open Price": 1.16353, "Close Price": 1.16244, "EMA 200": 1.16899, "Trend": "Alta", "RSI 14": 28.77, "ATR 14": 0.00195, "Result": "SL", "P&L": -1.09}, {"Ticket": 356797916, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-09 08:01:13", "Closing (GMT+0)": "2026-01-09 12:06:08", "Duration": "4h4m", "Open Price": 1.34087, "Close Price": 1.3395, "EMA 200": 1.33924, "Trend": "Alta", "RSI 14": 32.99, "ATR 14": 0.00254, "Result": "SL", "P&L": -1.37}, {"Ticket": 357233229, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-09 12:01:16", "Closing (GMT+0)": "2026-01-09 12:05:55", "Duration": "0h4m", "Open Price": 1.34139, "Close Price": 1.33988, "EMA 200": 1.33915, "Trend": "Alta", "RSI 14": 34.1, "ATR 14": 0.00282, "Result": "SL", "P&L": -1.51}, {"Ticket": 353168318, "Pair": "USDJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 04:01:37", "Closing (GMT+0)": "2026-01-09 11:32:23", "Duration": "55h30m", "Open Price": 156.325, "Close Price": 157.982, "EMA 200": 155.82422, "Trend": "Alta", "RSI 14": 44.26, "ATR 14": 0.33336, "Result": "TP", "P&L": 10.49}, {"Ticket": 350756735, "Pair": "USDJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-05 16:00:57", "Closing (GMT+0)": "2026-01-09 11:13:28", "Duration": "91h12m", "Open Price": 156.144, "Close Price": 157.89, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "TP", "P&L": 11.06}, {"Ticket": 355816658, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 16:01:03", "Closing (GMT+0)": "2026-01-09 10:30:01", "Duration": "18h28m", "Open Price": 1.16439, "Close Price": 1.16333, "EMA 200": 1.16933, "Trend": "Alta", "RSI 14": 29.66, "ATR 14": 0.00196, "Result": "SL", "P&L": -1.06}, {"Ticket": 356797906, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-09 08:01:13", "Closing (GMT+0)": "2026-01-09 10:30:01", "Duration": "2h28m", "Open Price": 1.16461, "Close Price": 1.16301, "EMA 200": 1.16915, "Trend": "Alta", "RSI 14": 31.75, "ATR 14": 0.00184, "Result": "SL", "P&L": -1.6}, {"Ticket": 356597573, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-09 04:01:11", "Closing (GMT+0)": "2026-01-09 07:24:09", "Duration": "3h22m", "Open Price": 1.16476, "Close Price": 1.16378, "EMA 200": 1.16919, "Trend": "Alta", "RSI 14": 32.23, "ATR 14": 0.0018, "Result": "SL", "P&L": -0.98}, {"Ticket": 355816659, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 16:01:04", "Closing (GMT+0)": "2026-01-09 06:46:37", "Duration": "14h45m", "Open Price": 1.34218, "Close Price": 1.34074, "EMA 200": 1.33914, "Trend": "Alta", "RSI 14": 35.54, "ATR 14": 0.00268, "Result": "SL", "P&L": -1.44}, {"Ticket": 356597577, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-09 04:01:11", "Closing (GMT+0)": "2026-01-09 05:46:17", "Duration": "1h45m", "Open Price": 1.34257, "Close Price": 1.34125, "EMA 200": 1.33918, "Trend": "Alta", "RSI 14": 36.67, "ATR 14": 0.00243, "Result": "SL", "P&L": -1.32}, {"Ticket": 355447913, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 12:01:01", "Closing (GMT+0)": "2026-01-09 04:19:13", "Duration": "16h18m", "Open Price": 1.34322, "Close Price": 1.34177, "EMA 200": 1.33908, "Trend": "Alta", "RSI 14": 37.66, "ATR 14": 0.0027, "Result": "SL", "P&L": -1.45}, {"Ticket": 356345047, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-09 00:01:08", "Closing (GMT+0)": "2026-01-09 04:14:55", "Duration": "4h13m", "Open Price": 1.16553, "Close Price": 1.16451, "EMA 200": 1.1693, "Trend": "Alta", "RSI 14": 34.39, "ATR 14": 0.00186, "Result": "SL", "P&L": -1.02}, {"Ticket": 356345059, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-09 00:01:08", "Closing (GMT+0)": "2026-01-09 04:14:41", "Duration": "4h13m", "Open Price": 1.34331, "Close Price": 1.34195, "EMA 200": 1.33926, "Trend": "Alta", "RSI 14": 38.39, "ATR 14": 0.00251, "Result": "SL", "P&L": -1.36}, {"Ticket": 353168321, "Pair": "EURJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 04:01:38", "Closing (GMT+0)": "2026-01-08 14:24:26", "Duration": "34h22m", "Open Price": 182.849, "Close Price": 182.656, "EMA 200": 182.25585, "Trend": "Alta", "RSI 14": 33.77, "ATR 14": 0.33765, "Result": "SL", "P&L": -1.23}, {"Ticket": 355447884, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 12:01:00", "Closing (GMT+0)": "2026-01-08 13:24:00", "Duration": "1h23m", "Open Price": 1.16639, "Close Price": 1.16535, "EMA 200": 1.16934, "Trend": "Alta", "RSI 14": 34.74, "ATR 14": 0.00192, "Result": "SL", "P&L": -1.04}, {"Ticket": 354288586, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 20:00:49", "Closing (GMT+0)": "2026-01-08 10:45:01", "Duration": "14h44m", "Open Price": 1.16777, "Close Price": 1.16664, "EMA 200": 1.16951, "Trend": "Alta", "RSI 14": 38.56, "ATR 14": 0.00211, "Result": "SL", "P&L": -1.13}, {"Ticket": 355104781, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 08:00:58", "Closing (GMT+0)": "2026-01-08 10:33:44", "Duration": "2h32m", "Open Price": 1.34482, "Close Price": 1.3434, "EMA 200": 1.33908, "Trend": "Alta", "RSI 14": 41.07, "ATR 14": 0.00264, "Result": "SL", "P&L": -1.42}, {"Ticket": 355104776, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-08 08:00:58", "Closing (GMT+0)": "2026-01-08 10:05:18", "Duration": "2h4m", "Open Price": 0.86842, "Close Price": 0.86892, "EMA 200": 0.87324, "Trend": "Baixa", "RSI 14": 54.03, "ATR 14": 0.00099, "Result": "SL", "P&L": -0.67}, {"Ticket": 354586241, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 00:00:52", "Closing (GMT+0)": "2026-01-08 05:38:04", "Duration": "5h37m", "Open Price": 1.16809, "Close Price": 1.167, "EMA 200": 1.16944, "Trend": "Alta", "RSI 14": 40.03, "ATR 14": 0.00202, "Result": "SL", "P&L": -1.09}, {"Ticket": 354586248, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 00:00:52", "Closing (GMT+0)": "2026-01-08 05:00:54", "Duration": "5h0m", "Open Price": 1.34571, "Close Price": 1.34423, "EMA 200": 1.33894, "Trend": "Alta", "RSI 14": 42.41, "ATR 14": 0.00276, "Result": "SL", "P&L": -1.48}, {"Ticket": 354288592, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 20:00:50", "Closing (GMT+0)": "2026-01-08 05:00:34", "Duration": "8h59m", "Open Price": 1.34589, "Close Price": 1.34434, "EMA 200": 1.33891, "Trend": "Alta", "RSI 14": 42.77, "ATR 14": 0.0029, "Result": "SL", "P&L": -1.55}, {"Ticket": 354872254, "Pair": "EURJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 04:00:55", "Closing (GMT+0)": "2026-01-08 04:59:41", "Duration": "0h58m", "Open Price": 182.929, "Close Price": 182.74, "EMA 200": 182.32776, "Trend": "Alta", "RSI 14": 39.27, "ATR 14": 0.32994, "Result": "SL", "P&L": -1.21}, {"Ticket": 354872259, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 04:00:55", "Closing (GMT+0)": "2026-01-08 04:59:26", "Duration": "0h58m", "Open Price": 1.34602, "Close Price": 1.34458, "EMA 200": 1.33905, "Trend": "Alta", "RSI 14": 43.29, "ATR 14": 0.00268, "Result": "SL", "P&L": -1.44}, {"Ticket": 354872255, "Pair": "GBPJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 04:00:55", "Closing (GMT+0)": "2026-01-08 04:53:38", "Duration": "0h52m", "Open Price": 210.746, "Close Price": 210.526, "EMA 200": 208.77096, "Trend": "Alta", "RSI 14": 40.51, "ATR 14": 0.39686, "Result": "SL", "P&L": -1.41}, {"Ticket": 354586246, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-08 00:00:52", "Closing (GMT+0)": "2026-01-08 04:32:53", "Duration": "4h32m", "Open Price": 0.86791, "Close Price": 0.86841, "EMA 200": 0.87334, "Trend": "Baixa", "RSI 14": 49.86, "ATR 14": 0.001, "Result": "SL", "P&L": -0.67}, {"Ticket": 354872257, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-08 04:00:55", "Closing (GMT+0)": "2026-01-08 04:31:55", "Duration": "0h31m", "Open Price": 0.86786, "Close Price": 0.86835, "EMA 200": 0.87327, "Trend": "Baixa", "RSI 14": 49.72, "ATR 14": 0.00097, "Result": "SL", "P&L": -0.66}, {"Ticket": 350032601, "Pair": "GBPJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-05 08:00:53", "Closing (GMT+0)": "2026-01-08 03:18:36", "Duration": "67h17m", "Open Price": 210.82, "Close Price": 210.584, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.51}, {"Ticket": 354288585, "Pair": "GBPJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 20:00:49", "Closing (GMT+0)": "2026-01-08 03:15:10", "Duration": "7h14m", "Open Price": 210.87, "Close Price": 210.642, "EMA 200": 208.71705, "Trend": "Alta", "RSI 14": 42.15, "ATR 14": 0.40162, "Result": "SL", "P&L": -1.46}, {"Ticket": 354288587, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-07 20:00:49", "Closing (GMT+0)": "2026-01-08 02:12:12", "Duration": "6h11m", "Open Price": 0.86753, "Close Price": 0.86805, "EMA 200": 0.87341, "Trend": "Baixa", "RSI 14": 46.61, "ATR 14": 0.00104, "Result": "SL", "P&L": -0.7}, {"Ticket": 354586238, "Pair": "GBPJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-08 00:00:52", "Closing (GMT+0)": "2026-01-08 02:08:25", "Duration": "2h7m", "Open Price": 211.051, "Close Price": 210.832, "EMA 200": 208.74341, "Trend": "Alta", "RSI 14": 46.25, "ATR 14": 0.39401, "Result": "SL", "P&L": -1.4}, {"Ticket": 354081047, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-07 16:01:46", "Closing (GMT+0)": "2026-01-07 23:32:09", "Duration": "7h30m", "Open Price": 0.86736, "Close Price": 0.86791, "EMA 200": 0.87347, "Trend": "Baixa", "RSI 14": 45.23, "ATR 14": 0.00109, "Result": "SL", "P&L": -0.74}, {"Ticket": 354081046, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 16:01:46", "Closing (GMT+0)": "2026-01-07 23:21:07", "Duration": "7h19m", "Open Price": 1.16839, "Close Price": 1.16723, "EMA 200": 1.16952, "Trend": "Alta", "RSI 14": 40.26, "ATR 14": 0.00216, "Result": "SL", "P&L": -1.16}, {"Ticket": 354081051, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 16:01:47", "Closing (GMT+0)": "2026-01-07 22:37:10", "Duration": "6h35m", "Open Price": 1.34694, "Close Price": 1.34537, "EMA 200": 1.33885, "Trend": "Alta", "RSI 14": 44.82, "ATR 14": 0.00297, "Result": "SL", "P&L": -1.57}, {"Ticket": 354081045, "Pair": "GBPJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 16:01:46", "Closing (GMT+0)": "2026-01-07 20:00:01", "Duration": "3h58m", "Open Price": 211.067, "Close Price": 210.843, "EMA 200": 208.69184, "Trend": "Alta", "RSI 14": 45.82, "ATR 14": 0.40405, "Result": "SL", "P&L": -1.43}, {"Ticket": 353713563, "Pair": "GBPJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 12:01:43", "Closing (GMT+0)": "2026-01-07 14:09:48", "Duration": "2h8m", "Open Price": 211.274, "Close Price": 211.044, "EMA 200": 208.65629, "Trend": "Alta", "RSI 14": 49.81, "ATR 14": 0.40553, "Result": "SL", "P&L": -1.47}, {"Ticket": 353713585, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 12:01:44", "Closing (GMT+0)": "2026-01-07 12:15:46", "Duration": "0h14m", "Open Price": 1.34936, "Close Price": 1.34776, "EMA 200": 1.33882, "Trend": "Alta", "RSI 14": 49.84, "ATR 14": 0.003, "Result": "SL", "P&L": -1.6}, {"Ticket": 353713575, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-07 12:01:44", "Closing (GMT+0)": "2026-01-07 12:11:27", "Duration": "0h9m", "Open Price": 0.86644, "Close Price": 0.86697, "EMA 200": 0.87353, "Trend": "Baixa", "RSI 14": 36.96, "ATR 14": 0.00106, "Result": "SL", "P&L": -0.71}, {"Ticket": 353354073, "Pair": "USDJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 08:01:40", "Closing (GMT+0)": "2026-01-07 10:42:24", "Duration": "2h40m", "Open Price": 156.542, "Close Price": 156.371, "EMA 200": 155.83793, "Trend": "Alta", "RSI 14": 49.12, "ATR 14": 0.32142, "Result": "SL", "P&L": -1.09}, {"Ticket": 353354098, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 08:01:41", "Closing (GMT+0)": "2026-01-07 10:14:55", "Duration": "2h13m", "Open Price": 1.34979, "Close Price": 1.34816, "EMA 200": 1.33864, "Trend": "Alta", "RSI 14": 50.88, "ATR 14": 0.00305, "Result": "SL", "P&L": -1.63}, {"Ticket": 353354080, "Pair": "GBPJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 08:01:40", "Closing (GMT+0)": "2026-01-07 10:07:35", "Duration": "2h5m", "Open Price": 211.291, "Close Price": 211.069, "EMA 200": 208.61239, "Trend": "Alta", "RSI 14": 50.34, "ATR 14": 0.40347, "Result": "SL", "P&L": -1.42}, {"Ticket": 352363644, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-06 16:01:11", "Closing (GMT+0)": "2026-01-07 09:27:39", "Duration": "17h26m", "Open Price": 0.86581, "Close Price": 0.86641, "EMA 200": 0.87393, "Trend": "Baixa", "RSI 14": 27.59, "ATR 14": 0.0012, "Result": "SL", "P&L": -0.81}, {"Ticket": 352650338, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-06 21:33:34", "Closing (GMT+0)": "2026-01-07 09:26:47", "Duration": "11h53m", "Open Price": 0.86582, "Close Price": 0.86637, "EMA 200": 0.87376, "Trend": "Baixa", "RSI 14": 29.13, "ATR 14": 0.00109, "Result": "SL", "P&L": -0.74}, {"Ticket": 353354092, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-07 08:01:41", "Closing (GMT+0)": "2026-01-07 09:26:47", "Duration": "1h25m", "Open Price": 0.86584, "Close Price": 0.86636, "EMA 200": 0.87363, "Trend": "Baixa", "RSI 14": 29.96, "ATR 14": 0.00105, "Result": "SL", "P&L": -0.7}, {"Ticket": 352882794, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-07 00:01:35", "Closing (GMT+0)": "2026-01-07 06:15:09", "Duration": "6h13m", "Open Price": 0.86572, "Close Price": 0.86627, "EMA 200": 0.87376, "Trend": "Baixa", "RSI 14": 28.07, "ATR 14": 0.00111, "Result": "SL", "P&L": -0.74}, {"Ticket": 352650344, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-06 21:33:34", "Closing (GMT+0)": "2026-01-07 05:25:00", "Duration": "7h51m", "Open Price": 1.35018, "Close Price": 1.3485, "EMA 200": 1.33855, "Trend": "Alta", "RSI 14": 52.03, "ATR 14": 0.00308, "Result": "SL", "P&L": -1.68}, {"Ticket": 352363632, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-06 16:01:11", "Closing (GMT+0)": "2026-01-07 05:15:41", "Duration": "13h14m", "Open Price": 1.16887, "Close Price": 1.16759, "EMA 200": 1.16968, "Trend": "Alta", "RSI 14": 39.61, "ATR 14": 0.00239, "Result": "SL", "P&L": -1.28}, {"Ticket": 353168323, "Pair": "GBPJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-07 04:01:38", "Closing (GMT+0)": "2026-01-07 05:07:01", "Duration": "1h5m", "Open Price": 211.247, "Close Price": 211.021, "EMA 200": 208.58966, "Trend": "Alta", "RSI 14": 49.24, "ATR 14": 0.40673, "Result": "SL", "P&L": -1.44}, {"Ticket": 352363668, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-06 16:01:11", "Closing (GMT+0)": "2026-01-07 05:02:37", "Duration": "13h1m", "Open Price": 1.34995, "Close Price": 1.34883, "EMA 200": 1.33832, "Trend": "Alta", "RSI 14": 51.65, "ATR 14": 0.00341, "Result": "SL", "P&L": -1.12}, {"Ticket": 352650335, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-06 21:33:33", "Closing (GMT+0)": "2026-01-07 04:50:42", "Duration": "7h17m", "Open Price": 1.16906, "Close Price": 1.16789, "EMA 200": 1.16965, "Trend": "Alta", "RSI 14": 40.45, "ATR 14": 0.00217, "Result": "SL", "P&L": -1.17}, {"Ticket": 350399257, "Pair": "EURJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-05 12:00:55", "Closing (GMT+0)": "2026-01-07 02:05:04", "Duration": "38h4m", "Open Price": 183.119, "Close Price": 182.913, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.32}, {"Ticket": 351993544, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-06 12:01:08", "Closing (GMT+0)": "2026-01-06 13:06:29", "Duration": "1h5m", "Open Price": 0.86554, "Close Price": 0.86617, "EMA 200": 0.87401, "Trend": "Baixa", "RSI 14": 26.19, "ATR 14": 0.00126, "Result": "SL", "P&L": -0.85}, {"Ticket": 351993526, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-06 12:01:08", "Closing (GMT+0)": "2026-01-06 12:14:53", "Duration": "0h13m", "Open Price": 1.17083, "Close Price": 1.16957, "EMA 200": 1.16969, "Trend": "Alta", "RSI 14": 44.3, "ATR 14": 0.00236, "Result": "SL", "P&L": -1.26}, {"Ticket": 351993556, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-06 12:01:08", "Closing (GMT+0)": "2026-01-06 12:04:12", "Duration": "0h3m", "Open Price": 1.35265, "Close Price": 1.35152, "EMA 200": 1.33821, "Trend": "Alta", "RSI 14": 57.03, "ATR 14": 0.00342, "Result": "SL", "P&L": -1.13}, {"Ticket": 351673315, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-06 08:01:05", "Closing (GMT+0)": "2026-01-06 09:55:49", "Duration": "1h54m", "Open Price": 1.1711, "Close Price": 1.16984, "EMA 200": 1.16963, "Trend": "Alta", "RSI 14": 44.81, "ATR 14": 0.00236, "Result": "SL", "P&L": -1.26}, {"Ticket": 351673321, "Pair": "EURGBP", "Type": "SELL", "Opening (GMT+0)": "2026-01-06 08:01:06", "Closing (GMT+0)": "2026-01-06 09:54:08", "Duration": "1h53m", "Open Price": 0.86546, "Close Price": 0.86609, "EMA 200": 0.87411, "Trend": "Baixa", "RSI 14": 24.66, "ATR 14": 0.00125, "Result": "SL", "P&L": -0.85}, {"Ticket": 351673332, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-06 08:01:06", "Closing (GMT+0)": "2026-01-06 08:51:36", "Duration": "0h50m", "Open Price": 1.35307, "Close Price": 1.35196, "EMA 200": 1.33799, "Trend": "Alta", "RSI 14": 58.13, "ATR 14": 0.00338, "Result": "SL", "P&L": -1.11}, {"Ticket": 350032594, "Pair": "USDJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-05 08:00:52", "Closing (GMT+0)": "2026-01-05 13:30:34", "Duration": "5h29m", "Open Price": 156.601, "Close Price": 156.426, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.12}, {"Ticket": 350032598, "Pair": "EURJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-05 08:00:53", "Closing (GMT+0)": "2026-01-05 09:27:11", "Duration": "1h26m", "Open Price": 183.055, "Close Price": 182.853, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.29}, {"Ticket": 349198604, "Pair": "USDJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-04 20:29:44", "Closing (GMT+0)": "2026-01-05 07:45:09", "Duration": "11h15m", "Open Price": 156.834, "Close Price": 156.673, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.03}, {"Ticket": 349845760, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-05 04:00:50", "Closing (GMT+0)": "2026-01-05 06:07:47", "Duration": "2h6m", "Open Price": 1.16909, "Close Price": 1.16791, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.18}, {"Ticket": 349845757, "Pair": "EURJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-05 04:00:50", "Closing (GMT+0)": "2026-01-05 05:05:04", "Duration": "1h4m", "Open Price": 183.573, "Close Price": 183.38, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.23}, {"Ticket": 349198614, "Pair": "GBPJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-04 20:29:45", "Closing (GMT+0)": "2026-01-05 04:57:30", "Duration": "8h27m", "Open Price": 210.971, "Close Price": 210.734, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.51}, {"Ticket": 349198607, "Pair": "EURJPY", "Type": "BUY", "Opening (GMT+0)": "2026-01-04 20:29:45", "Closing (GMT+0)": "2026-01-05 00:38:31", "Duration": "4h8m", "Open Price": 183.651, "Close Price": 183.462, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.2}, {"Ticket": 349593182, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-05 00:00:48", "Closing (GMT+0)": "2026-01-05 00:23:17", "Duration": "0h22m", "Open Price": 1.3433, "Close Price": 1.34231, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -0.99}, {"Ticket": 349593181, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-05 00:00:47", "Closing (GMT+0)": "2026-01-05 00:23:16", "Duration": "0h22m", "Open Price": 1.16899, "Close Price": 1.16783, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.16}, {"Ticket": 349198621, "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-04 20:29:45", "Closing (GMT+0)": "2026-01-04 23:02:28", "Duration": "2h32m", "Open Price": 1.17101, "Close Price": 1.16986, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.15}, {"Ticket": 349198627, "Pair": "GBPUSD", "Type": "BUY", "Opening (GMT+0)": "2026-01-04 20:29:45", "Closing (GMT+0)": "2026-01-04 20:42:32", "Duration": "0h12m", "Open Price": 1.34523, "Close Price": 1.34423, "EMA 200": "N/A", "Trend": "N/A", "RSI 14": "N/A", "ATR 14": "N/A", "Result": "SL", "P&L": -1.0}];
+
+            const ws = XLSX.utils.json_to_sheet(allTrades);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Trades");
+
+            const filename = 'Rosenfeld_Trades_' + new Date().toISOString().split('T')[0] + '.xlsx';
+            XLSX.writeFile(wb, filename);
+        }
+    </script>
+</body>
+</html>
