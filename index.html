@@ -534,6 +534,16 @@
 
 </head>
 <body>
+    <style>
+        /* Hide content until authenticated */
+        .protected-content {
+            display: none;
+        }
+        .protected-content.authenticated {
+            display: block;
+        }
+    </style>
+
     <script>
         // Password authentication for dashboard access
         // SHA-256 hash of password "0508"
@@ -554,24 +564,33 @@
 
             if (!input) {
                 document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:#e2e8f0;font-family:Inter,sans-serif;"><div style="text-align:center;"><h1 style="font-size:3rem;margin-bottom:1rem;">🔒 Acesso Negado</h1><p style="font-size:1.2rem;color:#94a3b8;">Senha não fornecida</p></div></div>';
-                throw new Error("Access denied - no password provided");
+                return false;
             }
 
             const inputHash = await sha256(input);
 
             if (inputHash !== PASSWORD_HASH) {
                 document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;color:#e2e8f0;font-family:Inter,sans-serif;"><div style="text-align:center;"><h1 style="font-size:3rem;margin-bottom:1rem;">🔒 Acesso Negado</h1><p style="font-size:1.2rem;color:#94a3b8;">Senha incorreta</p></div></div>';
-                throw new Error("Access denied - incorrect password");
+                return false;
             }
 
-            // Password correct - continue loading dashboard
+            // Password correct - show content
+            return true;
         }
 
-        // Execute authentication on page load
-        authenticate();
+        // Execute authentication when DOM is ready
+        window.addEventListener('DOMContentLoaded', async function() {
+            const isAuthenticated = await authenticate();
+            if (isAuthenticated) {
+                // Show all protected content
+                document.querySelectorAll('.protected-content').forEach(el => {
+                    el.classList.add('authenticated');
+                });
+            }
+        });
     </script>
 
-    <div class="navbar">
+    <div class="navbar protected-content">
         <div>
             <h1>Trader Rosenfeld - Executive Dashboard</h1>
             <div class="subtitle">Generated on 2026-01-12 18:55 | Trades since 2026-01-04</div>
@@ -581,7 +600,7 @@
         </button>
     </div>
 
-    <div class="container">
+    <div class="container protected-content">
         <!-- Executive Summary -->
         <div class="section">
             <div class="section-title">Executive Summary</div>
