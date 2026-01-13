@@ -534,10 +534,81 @@
 
     
     <style>
-        /* Security: Hide scrollbars on body when locked */
-        body {{ overflow: hidden !important; }}
+        /* CRITICAL SECURITY: Hide scrollbars completely - MAXIMUM enforcement */
+
+        /* Base elements - FORCE no scroll with ALL possible properties */
+        html {{
+            overflow: hidden !important;
+            overflow-x: hidden !important;
+            overflow-y: hidden !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+        }}
+
+        body {{
+            overflow: hidden !important;
+            overflow-x: hidden !important;
+            overflow-y: hidden !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+        }}
+
+        /* WebKit (Chrome/Safari/Edge) - COMPLETE scrollbar removal */
+        ::-webkit-scrollbar {{
+            display: none !important;
+            width: 0px !important;
+            height: 0px !important;
+            background: transparent !important;
+        }}
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        div::-webkit-scrollbar,
+        *::-webkit-scrollbar {{
+            display: none !important;
+            width: 0px !important;
+            height: 0px !important;
+        }}
+
+        /* Firefox - scrollbar removal */
+        html, body, *, div {{
+            scrollbar-width: none !important;
+            scrollbar-color: transparent transparent !important;
+        }}
+
+        /* IE/Edge - scrollbar removal */
+        html, body, *, div {{
+            -ms-overflow-style: none !important;
+        }}
+
+        /* Lock screen - prevent any overflow */
+        #lockScreen {{
+            overflow: hidden !important;
+            position: fixed !important;
+        }}
+
         /* Hide main content until unlocked */
-        body > *:not(#lockScreen) {{ display: none; }}
+        body > *:not(#lockScreen) {{
+            display: none !important;
+        }}
     </style>
 
 </head>
@@ -573,7 +644,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - Executive Dashboard</h1>
-            <div class="subtitle">Generated on 2026-01-13 19:52 | Trades since 2026-01-04</div>
+            <div class="subtitle">Generated on 2026-01-13 20:21 | Trades since 2026-01-04</div>
         </div>
         <button class="export-btn" onclick="window.print()" style="margin: 0;">
             <span>🖨️ Export PDF</span>
