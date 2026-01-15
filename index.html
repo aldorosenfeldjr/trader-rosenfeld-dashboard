@@ -81,7 +81,14 @@
             white-space: nowrap;
         }
 
-        .filter-inline-select {
+        /* Custom Dropdown Styles */
+        .custom-dropdown {
+            position: relative;
+            min-width: 140px;
+            max-width: 160px;
+        }
+
+        .dropdown-display {
             padding: 6px 10px;
             background: rgba(30, 41, 59, 0.95);
             border: 1px solid rgba(148, 163, 184, 0.3);
@@ -90,24 +97,62 @@
             font-size: 0.85rem;
             font-family: 'Inter', sans-serif;
             cursor: pointer;
-            min-width: 120px;
-            max-width: 140px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             height: 34px;
-            overflow-y: auto;
             transition: all 0.2s ease;
+            user-select: none;
         }
 
-        .filter-inline-select option {
-            background: #1e293b;
-            color: #f1f5f9;
-            padding: 4px;
-        }
-
-        .filter-inline-select:hover,
-        .filter-inline-select:focus {
+        .dropdown-display:hover {
             border-color: #60a5fa;
             background: rgba(30, 41, 59, 1);
-            outline: none;
+        }
+
+        .dropdown-arrow {
+            font-size: 0.7rem;
+            margin-left: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .dropdown-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 4px;
+            background: rgba(30, 41, 59, 0.98);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .dropdown-options.show {
+            display: block;
+        }
+
+        .dropdown-option {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            color: #f1f5f9;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .dropdown-option:hover {
+            background: rgba(96, 165, 250, 0.15);
+        }
+
+        .dropdown-option input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
         }
 
         .filter-inline-input {
@@ -920,15 +965,24 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - Executive Dashboard</h1>
-            <div class="subtitle">Generated on 2026-01-15 14:41 | Trades since 2026-01-04</div>
+            <div class="subtitle">Generated on 2026-01-15 14:51 | Trades since 2026-01-04</div>
         </div>
         
         <div class="filters-inline">
             <div class="filter-inline-item">
                 <label class="filter-inline-label">Pares:</label>
-                <select id="pairFilter" class="filter-inline-select" multiple onchange="handlePairFilterChange()">
-                    <option value="ALL" selected>✓ Todos</option><option value="EURGBPm" selected>EURGBPm</option><option value="EURJPYm" selected>EURJPYm</option><option value="EURUSDm" selected>EURUSDm</option><option value="GBPJPYm" selected>GBPJPYm</option><option value="GBPUSDm" selected>GBPUSDm</option><option value="USDJPYm" selected>USDJPYm</option>
-                </select>
+                <div class="custom-dropdown" id="pairDropdown">
+                    <div class="dropdown-display" onclick="togglePairDropdown()">
+                        <span id="pairDropdownText">Todos os pares</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-options" id="pairDropdownOptions">
+                        <label class="dropdown-option">
+                            <input type="checkbox" value="ALL" checked onchange="handlePairSelection(this)"> ✓ Todos
+                        </label>
+                        <label class="dropdown-option"><input type="checkbox" value="EURGBPm" checked onchange="handlePairSelection(this)"> EURGBPm</label><label class="dropdown-option"><input type="checkbox" value="EURJPYm" checked onchange="handlePairSelection(this)"> EURJPYm</label><label class="dropdown-option"><input type="checkbox" value="EURUSDm" checked onchange="handlePairSelection(this)"> EURUSDm</label><label class="dropdown-option"><input type="checkbox" value="GBPJPYm" checked onchange="handlePairSelection(this)"> GBPJPYm</label><label class="dropdown-option"><input type="checkbox" value="GBPUSDm" checked onchange="handlePairSelection(this)"> GBPUSDm</label><label class="dropdown-option"><input type="checkbox" value="USDJPYm" checked onchange="handlePairSelection(this)"> USDJPYm</label>
+                    </div>
+                </div>
             </div>
             <div class="filter-inline-item">
                 <label class="filter-inline-label">De:</label>
@@ -3227,12 +3281,52 @@
             applyFilters();
         }
 
+        // Custom dropdown functions
+        function togglePairDropdown() {
+            const dropdown = document.getElementById('pairDropdownOptions');
+            dropdown.classList.toggle('show');
+        }
+
+        function handlePairSelection(checkbox) {
+            const allCheckbox = document.querySelector('.dropdown-option input[value="ALL"]');
+            const individualCheckboxes = Array.from(document.querySelectorAll('.dropdown-option input:not([value="ALL"])'));
+
+            if (checkbox.value === 'ALL') {
+                // "Todos" was clicked - select/deselect all
+                individualCheckboxes.forEach(cb => cb.checked = checkbox.checked);
+            } else {
+                // Individual pair clicked - check if all are selected
+                const allIndividualsChecked = individualCheckboxes.every(cb => cb.checked);
+                allCheckbox.checked = allIndividualsChecked;
+            }
+
+            updateDropdownText();
+            applyFilters();
+        }
+
+        function updateDropdownText() {
+            const allCheckbox = document.querySelector('.dropdown-option input[value="ALL"]');
+            const individualCheckboxes = Array.from(document.querySelectorAll('.dropdown-option input:not([value="ALL"])'));
+            const checkedCount = individualCheckboxes.filter(cb => cb.checked).length;
+            const totalCount = individualCheckboxes.length;
+
+            const dropdownText = document.getElementById('pairDropdownText');
+            if (allCheckbox.checked) {
+                dropdownText.textContent = 'Todos os pares';
+            } else if (checkedCount === 0) {
+                dropdownText.textContent = 'Selecione pares';
+            } else if (checkedCount === 1) {
+                const checkedPair = individualCheckboxes.find(cb => cb.checked);
+                dropdownText.textContent = checkedPair.value;
+            } else {
+                dropdownText.textContent = `${checkedCount} pares`;
+            }
+        }
+
         function resetFilters() {
-            // Reset dropdown: select all pairs including "ALL"
-            const pairFilter = document.getElementById('pairFilter');
-            Array.from(pairFilter.options).forEach(opt => {
-                opt.selected = true;
-            });
+            // Reset all checkboxes to checked
+            document.querySelectorAll('.dropdown-option input').forEach(cb => cb.checked = true);
+            updateDropdownText();
 
             // Reset date inputs to original range
             const dateFrom = document.getElementById('dateFrom');
@@ -3245,47 +3339,23 @@
             applyFilters();
         }
 
-        function handlePairFilterChange() {
-            const pairFilter = document.getElementById('pairFilter');
-            const selectedOptions = Array.from(pairFilter.selectedOptions);
-            const allOption = pairFilter.querySelector('option[value="ALL"]');
-
-            // Check if "ALL" was just selected
-            if (selectedOptions.some(opt => opt.value === 'ALL')) {
-                // Select all other options
-                Array.from(pairFilter.options).forEach(opt => {
-                    opt.selected = true;
-                });
-            } else {
-                // Check if all individual pairs are selected
-                const individualOptions = Array.from(pairFilter.options).filter(opt => opt.value !== 'ALL');
-                const allIndividualsSelected = individualOptions.every(opt => opt.selected);
-
-                if (allIndividualsSelected) {
-                    allOption.selected = true;
-                } else {
-                    allOption.selected = false;
-                }
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('pairDropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                document.getElementById('pairDropdownOptions').classList.remove('show');
             }
-
-            applyFilters();
-        }
+        });
 
         function applyFilters() {
-            // Get selected pairs from dropdown
-            const pairFilter = document.getElementById('pairFilter');
-            const selectedOptions = Array.from(pairFilter.selectedOptions);
-            const selectedPairs = selectedOptions
-                .filter(opt => opt.value !== 'ALL')
-                .map(opt => opt.value);
+            // Get selected pairs from custom dropdown checkboxes
+            const individualCheckboxes = Array.from(document.querySelectorAll('.dropdown-option input:not([value="ALL"])'));
+            const selectedPairs = individualCheckboxes
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
 
-            // If no pairs selected or ALL is selected, include all pairs
-            const allPairs = Array.from(pairFilter.options)
-                .filter(opt => opt.value !== 'ALL')
-                .map(opt => opt.value);
-            const pairsToFilter = selectedPairs.length === 0 || selectedOptions.some(opt => opt.value === 'ALL')
-                ? allPairs
-                : selectedPairs;
+            // If no pairs selected, don't filter (show all)
+            const pairsToFilter = selectedPairs.length === 0 ? individualCheckboxes.map(cb => cb.value) : selectedPairs;
 
             // Get date range
             const dateFrom = document.getElementById('dateFrom')?.value;
