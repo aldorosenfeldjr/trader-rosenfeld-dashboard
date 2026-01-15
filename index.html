@@ -915,7 +915,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - Executive Dashboard</h1>
-            <div class="subtitle">Generated on 2026-01-15 14:02 | Trades since 2026-01-04</div>
+            <div class="subtitle">Generated on 2026-01-15 14:04 | Trades since 2026-01-04</div>
         </div>
         
         <div class="filters-inline">
@@ -1023,7 +1023,7 @@
                         <th>P&L</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="performanceTableBody">
                     
                     <tr>
                         <td class="pair-name">EURGBP</td>
@@ -1088,7 +1088,7 @@
             <div class="section-title">Detailed Analysis by Pair</div>
             <div class="section-subtitle">Strategic insights and risk metrics</div>
 
-            <div class="analysis-grid">
+            <div class="analysis-grid" id="detailedAnalysisContainer">
                 
                 <div class="analysis-card">
                     <div class="analysis-header">
@@ -1324,7 +1324,7 @@
                             <th>P&L</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tradesTableBody">
                         
                         <tr>
                             <td>364827643</td>
@@ -3445,13 +3445,114 @@
         }
 
         function updatePairAnalysis(filteredTrades) {
-            // TODO: Implement pair analysis table update
-            console.log('Pair analysis update with', filteredTrades.length, 'trades');
+            // Group trades by pair
+            const byPair = {};
+            filteredTrades.forEach(trade => {
+                if (!byPair[trade.symbol]) {
+                    byPair[trade.symbol] = [];
+                }
+                byPair[trade.symbol].push(trade);
+            });
+
+            // Calculate metrics per pair
+            const tbody = document.getElementById('performanceTableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';  // Clear existing rows
+
+            // Sort pairs alphabetically
+            const sortedPairs = Object.keys(byPair).sort();
+
+            sortedPairs.forEach(symbol => {
+                const trades = byPair[symbol];
+                const totalTrades = trades.length;
+                const tps = trades.filter(t => t.pnl > 0).length;
+                const sls = trades.filter(t => t.pnl < 0).length;
+                const winRate = totalTrades > 0 ? (tps / totalTrades * 100) : 0;
+                const netPnL = trades.reduce((sum, t) => sum + t.pnl, 0);
+
+                // Create row
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="pair-name">${symbol}</td>
+                    <td>${totalTrades}</td>
+                    <td class="profit">${tps}</td>
+                    <td class="loss">${sls}</td>
+                    <td>${winRate.toFixed(1)}%</td>
+                    <td class="${netPnL >= 0 ? 'profit' : 'loss'}">$${netPnL.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // If no trades, show empty message
+            if (sortedPairs.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="6" style="text-align: center; color: #94a3b8;">No trades match the selected filters</td>';
+                tbody.appendChild(row);
+            }
         }
 
         function updateTradesTable(filteredTrades) {
-            // TODO: Implement trades table update
-            console.log('Trades table update with', filteredTrades.length, 'trades');
+            const tbody = document.getElementById('tradesTableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';  // Clear existing rows
+
+            // Sort by close time (newest first) and limit to 200 trades
+            const sorted = filteredTrades.slice().sort((a, b) => {
+                const dateA = new Date(a.close_time);
+                const dateB = new Date(b.close_time);
+                return dateB - dateA;
+            }).slice(0, 200);
+
+            sorted.forEach(trade => {
+                // Calculate duration
+                const openTime = new Date(trade.open_time);
+                const closeTime = new Date(trade.close_time);
+                const durationHours = (closeTime - openTime) / (1000 * 60 * 60);
+                const hours = Math.floor(durationHours);
+                const minutes = Math.floor((durationHours % 1) * 60);
+                const durationStr = `${hours}h${minutes}m`;
+
+                // Format values
+                const resultClass = trade.result === 'TP' ? 'profit' : 'loss';
+                const pnlClass = trade.pnl >= 0 ? 'profit' : 'loss';
+                const typeClass = trade.type === 'BUY' ? 'profit' : 'loss';
+
+                const emaVal = trade.ema200 ? trade.ema200.toFixed(5) : 'N/A';
+                const rsiVal = trade.rsi ? trade.rsi.toFixed(2) : 'N/A';
+                const atrVal = trade.atr ? trade.atr.toFixed(5) : 'N/A';
+                const trendVal = trade.trend ? trade.trend : 'N/A';
+
+                // Format dates (already in string format from Python)
+                const openTimeStr = trade.open_time.replace('T', ' ').substring(0, 19);
+                const closeTimeStr = trade.close_time.replace('T', ' ').substring(0, 19);
+
+                // Create row
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${trade.ticket}</td>
+                    <td class="pair-name">${trade.symbol.replace('m', '')}</td>
+                    <td class="${typeClass}">${trade.type}</td>
+                    <td>${openTimeStr}</td>
+                    <td>${closeTimeStr}</td>
+                    <td>${durationStr}</td>
+                    <td>${emaVal}</td>
+                    <td>${trendVal}</td>
+                    <td>${rsiVal}</td>
+                    <td>${atrVal}</td>
+                    <td class="${resultClass}">${trade.result}</td>
+                    <td class="${pnlClass}">$${trade.pnl.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // If no trades, show empty message
+            if (sorted.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="12" style="text-align: center; color: #94a3b8;">No trades match the selected filters</td>';
+                tbody.appendChild(row);
+            }
         }
 
         // Initialize on page load
@@ -3610,4 +3711,4 @@
     </script>
 
 </body>
-</html><!-- Update: 1768496544 -->
+</html>
