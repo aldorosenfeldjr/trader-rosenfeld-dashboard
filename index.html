@@ -81,7 +81,7 @@
 
         .filter-inline-select {
             padding: 6px 10px;
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(30, 41, 59, 0.95);
             border: 1px solid rgba(148, 163, 184, 0.3);
             border-radius: 6px;
             color: #f1f5f9;
@@ -92,10 +92,16 @@
             transition: all 0.2s ease;
         }
 
+        .filter-inline-select option {
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 4px;
+        }
+
         .filter-inline-select:hover,
         .filter-inline-select:focus {
             border-color: #60a5fa;
-            background: rgba(30, 41, 59, 0.95);
+            background: rgba(30, 41, 59, 1);
             outline: none;
         }
 
@@ -909,14 +915,14 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - Executive Dashboard</h1>
-            <div class="subtitle">Generated on 2026-01-15 10:59 | Trades since 2026-01-04</div>
+            <div class="subtitle">Generated on 2026-01-15 11:11 | Trades since 2026-01-04</div>
         </div>
         
         <div class="filters-inline">
             <div class="filter-inline-item">
                 <label class="filter-inline-label">Pares:</label>
-                <select id="pairFilter" class="filter-inline-select" multiple size="1" onchange="applyFilters()">
-                    <option value="EURGBPm" selected>EURGBPm</option><option value="EURJPYm" selected>EURJPYm</option><option value="EURUSDm" selected>EURUSDm</option><option value="GBPJPYm" selected>GBPJPYm</option><option value="GBPUSDm" selected>GBPUSDm</option><option value="USDJPYm" selected>USDJPYm</option>
+                <select id="pairFilter" class="filter-inline-select" multiple size="1" onchange="handlePairFilterChange()">
+                    <option value="ALL" selected>✓ Todos</option><option value="EURGBPm" selected>EURGBPm</option><option value="EURJPYm" selected>EURJPYm</option><option value="EURUSDm" selected>EURUSDm</option><option value="GBPJPYm" selected>GBPJPYm</option><option value="GBPUSDm" selected>GBPUSDm</option><option value="USDJPYm" selected>USDJPYm</option>
                 </select>
             </div>
             <div class="filter-inline-item">
@@ -3174,9 +3180,11 @@
         }
 
         function resetFilters() {
-            // Reset all pair checkboxes
-            document.getElementById('pair_all').checked = true;
-            document.querySelectorAll('.pair-checkbox').forEach(cb => cb.checked = true);
+            // Reset dropdown: select all pairs including "ALL"
+            const pairFilter = document.getElementById('pairFilter');
+            Array.from(pairFilter.options).forEach(opt => {
+                opt.selected = true;
+            });
 
             // Reset date inputs to original range
             const dateFrom = document.getElementById('dateFrom');
@@ -3189,10 +3197,47 @@
             applyFilters();
         }
 
+        function handlePairFilterChange() {
+            const pairFilter = document.getElementById('pairFilter');
+            const selectedOptions = Array.from(pairFilter.selectedOptions);
+            const allOption = pairFilter.querySelector('option[value="ALL"]');
+
+            // Check if "ALL" was just selected
+            if (selectedOptions.some(opt => opt.value === 'ALL')) {
+                // Select all other options
+                Array.from(pairFilter.options).forEach(opt => {
+                    opt.selected = true;
+                });
+            } else {
+                // Check if all individual pairs are selected
+                const individualOptions = Array.from(pairFilter.options).filter(opt => opt.value !== 'ALL');
+                const allIndividualsSelected = individualOptions.every(opt => opt.selected);
+
+                if (allIndividualsSelected) {
+                    allOption.selected = true;
+                } else {
+                    allOption.selected = false;
+                }
+            }
+
+            applyFilters();
+        }
+
         function applyFilters() {
-            // Get selected pairs
-            const selectedPairs = Array.from(document.querySelectorAll('.pair-checkbox:checked'))
-                .map(cb => cb.id.replace('pair_', ''));
+            // Get selected pairs from dropdown
+            const pairFilter = document.getElementById('pairFilter');
+            const selectedOptions = Array.from(pairFilter.selectedOptions);
+            const selectedPairs = selectedOptions
+                .filter(opt => opt.value !== 'ALL')
+                .map(opt => opt.value);
+
+            // If no pairs selected or ALL is selected, include all pairs
+            const allPairs = Array.from(pairFilter.options)
+                .filter(opt => opt.value !== 'ALL')
+                .map(opt => opt.value);
+            const pairsToFilter = selectedPairs.length === 0 || selectedOptions.some(opt => opt.value === 'ALL')
+                ? allPairs
+                : selectedPairs;
 
             // Get date range
             const dateFrom = document.getElementById('dateFrom')?.value;
@@ -3201,7 +3246,7 @@
             // Filter trades
             const filteredTrades = allTradesData.filter(trade => {
                 // Filter by pair
-                if (!selectedPairs.includes(trade.symbol)) return false;
+                if (!pairsToFilter.includes(trade.symbol)) return false;
 
                 // Filter by date range
                 if (dateFrom && trade.close_time < dateFrom.replace('T', ' ') + ':00') return false;
@@ -3210,13 +3255,8 @@
                 return true;
             });
 
-            // Update filter status
+            // Update filter status counter
             document.getElementById('filteredCount').textContent = filteredTrades.length;
-
-            // Update "All" checkbox state
-            const allPairsChecked = document.querySelectorAll('.pair-checkbox:checked').length ===
-                                   document.querySelectorAll('.pair-checkbox').length;
-            document.getElementById('pair_all').checked = allPairsChecked;
 
             // Recalculate and update dashboard
             updateDashboard(filteredTrades);
