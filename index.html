@@ -915,13 +915,13 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - Executive Dashboard</h1>
-            <div class="subtitle">Generated on 2026-01-15 14:04 | Trades since 2026-01-04</div>
+            <div class="subtitle">Generated on 2026-01-15 14:27 | Trades since 2026-01-04</div>
         </div>
         
         <div class="filters-inline">
             <div class="filter-inline-item">
                 <label class="filter-inline-label">Pares:</label>
-                <select id="pairFilter" class="filter-inline-select" multiple size="1" onchange="handlePairFilterChange()">
+                <select id="pairFilter" class="filter-inline-select" multiple onchange="handlePairFilterChange()">
                     <option value="ALL" selected>✓ Todos</option><option value="EURGBPm" selected>EURGBPm</option><option value="EURJPYm" selected>EURJPYm</option><option value="EURUSDm" selected>EURUSDm</option><option value="GBPJPYm" selected>GBPJPYm</option><option value="GBPUSDm" selected>GBPUSDm</option><option value="USDJPYm" selected>USDJPYm</option>
                 </select>
             </div>
@@ -3410,8 +3410,10 @@
                     return dateA - dateB;
                 });
 
-                // Calculate cumulative P&L
+                // Calculate cumulative P&L and max drawdown
                 let cumulative = 0;
+                let peak = 0;
+                let maxDrawdown = 0;
                 const labels = [];
                 const data = [];
 
@@ -3419,6 +3421,15 @@
                     cumulative += trade.pnl;
                     labels.push(trade.close_time);
                     data.push(cumulative);
+
+                    // Track peak and drawdown
+                    if (cumulative > peak) {
+                        peak = cumulative;
+                    }
+                    const drawdown = peak - cumulative;
+                    if (drawdown > maxDrawdown) {
+                        maxDrawdown = drawdown;
+                    }
                 });
 
                 // Update chart data
@@ -3426,10 +3437,10 @@
                 equityChart.data.datasets[0].data = data;
                 equityChart.update();
 
-                // Update subtitle with final cumulative P&L
+                // Update subtitle with cumulative P&L and max drawdown
                 const subtitleEl = document.getElementById('equityChartSubtitle');
                 if (subtitleEl) {
-                    subtitleEl.textContent = `Cumulative P&L evolution over time: $` + cumulative.toFixed(2);
+                    subtitleEl.textContent = `Cumulative P&L evolution over time: $$${cumulative.toFixed(2)} | Max Drawdown: $$${maxDrawdown.toFixed(2)}`;
                 }
             } else if (equityChart && filteredTrades.length === 0) {
                 // No trades - clear chart
@@ -3439,7 +3450,7 @@
 
                 const subtitleEl = document.getElementById('equityChartSubtitle');
                 if (subtitleEl) {
-                    subtitleEl.textContent = 'Cumulative P&L evolution over time: $0.00';
+                    subtitleEl.textContent = 'Cumulative P&L evolution over time: $0.00 | Max Drawdown: $0.00';
                 }
             }
         }
@@ -3711,4 +3722,4 @@
     </script>
 
 </body>
-</html><!-- Update: 1768496674 -->
+</html>
