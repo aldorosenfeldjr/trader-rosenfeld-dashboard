@@ -647,7 +647,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - Executive Dashboard</h1>
-            <div class="subtitle">Generated on 2026-01-15 08:53 | Trades since 2026-01-04</div>
+            <div class="subtitle">Generated on 2026-01-15 09:14 | Trades since 2026-01-04</div>
         </div>
         <button class="export-btn" onclick="window.print()" style="margin: 0;">
             <span>🖨️ Export PDF</span>
@@ -2848,8 +2848,20 @@
                 failedAttempts = 0;
                 lockoutUntil = 0;
 
-                // Show main content
+                // CRITICAL FIX: Remove security styles that hide content
+                // Find and remove the security style tag
+                const styles = document.querySelectorAll('style');
+                styles.forEach(style => {
+                    if (style.textContent.includes('CRITICAL SECURITY: Hide scrollbars')) {
+                        style.remove();
+                    }
+                });
+
+                // Show main content by removing inline styles
+                document.documentElement.style.cssText = '';
+                document.body.style.cssText = '';
                 document.body.style.overflow = 'auto';
+
                 Array.from(document.body.children).forEach(el => {
                     if (el.id !== 'lockScreen') {
                         el.style.display = '';
