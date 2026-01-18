@@ -220,6 +220,49 @@
             }
         }
 
+        /* Mobile filters - stacked layout */
+        @media (max-width: 768px) {
+            .filters-inline {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .filter-inline-item {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .filter-inline-item .custom-dropdown {
+                flex: 1;
+                max-width: none;
+            }
+
+            .filter-inline-input {
+                flex: 1;
+                width: auto;
+                min-width: 0;
+            }
+
+            .filter-inline-label {
+                min-width: 40px;
+            }
+
+            .filter-inline-reset {
+                width: 100%;
+                margin-top: 4px;
+            }
+
+            .filter-inline-count {
+                width: 100%;
+                text-align: center;
+                padding: 8px 0 0 0;
+                border-left: none;
+                border-top: 1px solid rgba(148, 163, 184, 0.2);
+            }
+        }
+
         .container {
             max-width: 1600px;
             margin: 0 auto;
@@ -965,7 +1008,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - Executive Dashboard</h1>
-            <div class="subtitle">Generated on 2026-01-16 17:00 | Trades since 2026-01-04</div>
+            <div class="subtitle">Generated on 2026-01-18 14:41 | Trades since 2026-01-04</div>
         </div>
         
         <div class="filters-inline">
