@@ -970,7 +970,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - V1 (EMA200 + RSI%)</h1>
-            <div class="subtitle">Generated on 2026-01-19 23:50 | Combined Dashboard V1+V2</div>
+            <div class="subtitle">Generated on 2026-01-19 23:55 | Combined Dashboard V1+V2</div>
         </div>
         <div style="display: flex; align-items: center;">
             
@@ -1019,7 +1019,7 @@
             </div>
             <button class="filter-inline-reset" onclick="resetFilters()">↻</button>
             <span class="filter-inline-count">
-                <strong id="filteredCount">157</strong>/<strong>157</strong>
+                <strong id="filteredCount">157</strong>/<strong id="totalTradesCount">157</strong>
             </span>
         </div>
 
@@ -3997,6 +3997,65 @@
             tbody.innerHTML = html;
         }
 
+        // Update navbar total trades counter
+        function updateNavbarCounter(trades) {
+            const totalEl = document.getElementById('totalTradesCount');
+            const filteredEl = document.getElementById('filteredCount');
+            if (totalEl) totalEl.textContent = trades.length;
+            if (filteredEl) filteredEl.textContent = trades.length;
+        }
+
+        // Update Recent Trades table
+        function updateTradesTable(trades) {
+            const tbody = document.getElementById('tradesTableBody');
+            if (!tbody) return;
+
+            // Sort by close time descending and take last 200
+            const sortedTrades = [...trades].sort((a, b) => {
+                const dateA = new Date(a.close_time);
+                const dateB = new Date(b.close_time);
+                return dateB - dateA;
+            }).slice(0, 200);
+
+            let html = '';
+            sortedTrades.forEach(trade => {
+                const openTime = new Date(trade.open_time);
+                const closeTime = new Date(trade.close_time);
+                const durationMs = closeTime - openTime;
+                const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+                const durationMins = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+                const durationStr = durationHours > 0 ? `${durationHours}h ${durationMins}m` : `${durationMins}m`;
+
+                const pnl = trade.pnl;
+                const resultClass = pnl >= 0 ? 'profit' : 'loss';
+                const result = pnl > 0 ? 'TP' : 'SL';
+
+                const ema200 = trade.ema200 !== null && trade.ema200 !== undefined ? (trade.ema200 > 0 ? '↑ Above' : '↓ Below') : '-';
+                const trend = trade.trend || '-';
+                const rsi = trade.rsi !== null && trade.rsi !== undefined ? trade.rsi.toFixed(1) + '%' : '-';
+                const atr = trade.atr !== null && trade.atr !== undefined ? '$' + trade.atr.toFixed(2) : '-';
+
+                html += `
+                    <tr>
+                        <td>${trade.ticket}</td>
+                        <td class="pair-name">${trade.symbol}</td>
+                        <td>${trade.type}</td>
+                        <td>${trade.open_time}</td>
+                        <td>${trade.close_time}</td>
+                        <td>${durationStr}</td>
+                        <td>${ema200}</td>
+                        <td>${trend}</td>
+                        <td>${rsi}</td>
+                        <td>${atr}</td>
+                        <td class="${resultClass}">${result}</td>
+                        <td class="${resultClass}">$${pnl.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
         // Switch between versions - FULL UPDATE (V1/V2/V3)
         function switchVersion(version) {
             if (version === currentVersion) return;
@@ -4046,12 +4105,65 @@
             // Update Performance by Pair table
             updatePerformanceTable(trades);
 
-            // Update trades table via filters
-            if (typeof applyFilters === 'function') {
-                applyFilters();
-            }
+            // Update navbar counter
+            updateNavbarCounter(trades);
+
+            // Update Recent Trades table
+            updateTradesTable(trades);
+
+            // Update filter date range for new version
+            updateFilterDateRange(trades);
 
             console.log('Switched to', version, 'with', trades.length, 'trades');
+        }
+
+        // Update filter date range when switching versions
+        function updateFilterDateRange(trades) {
+            if (trades.length === 0) return;
+
+            const dateFrom = document.getElementById('dateFrom');
+            const dateTo = document.getElementById('dateTo');
+            if (!dateFrom || !dateTo) return;
+
+            // Find min/max dates from trades
+            const dates = trades.map(t => new Date(t.open_time));
+            const closeDates = trades.map(t => new Date(t.close_time));
+            const minDate = new Date(Math.min(...dates));
+            const maxDate = new Date(Math.max(...closeDates));
+
+            // Add 1 day to max date
+            maxDate.setDate(maxDate.getDate() + 1);
+
+            // Format for datetime-local input
+            const formatDate = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}T00:00`;
+            };
+
+            dateFrom.value = formatDate(minDate);
+            dateTo.value = formatDate(maxDate);
+
+            // Update pair filter dropdown
+            updatePairFilterDropdown(trades);
+        }
+
+        // Update pair filter dropdown for current version
+        function updatePairFilterDropdown(trades) {
+            const dropdownOptions = document.getElementById('pairDropdownOptions');
+            if (!dropdownOptions) return;
+
+            // Get unique pairs from current trades
+            const pairs = [...new Set(trades.map(t => t.symbol))].sort();
+
+            let html = '<label class="dropdown-option"><input type="checkbox" value="ALL" checked onchange="handlePairSelection(this)"> ✓ Todos</label>';
+            pairs.forEach(pair => {
+                html += `<label class="dropdown-option"><input type="checkbox" value="${pair}" checked onchange="handlePairSelection(this)"> ${pair}</label>`;
+            });
+
+            dropdownOptions.innerHTML = html;
+            document.getElementById('pairDropdownText').textContent = 'Todos os pares';
         }
 
         // Initialize with V1 data
