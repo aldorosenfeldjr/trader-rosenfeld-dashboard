@@ -397,6 +397,14 @@
             margin-top: 20px;
         }
 
+        /* Table scroll container for mobile horizontal scroll */
+        .table-scroll {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 16px;
+        }
+
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -759,19 +767,29 @@
                 -webkit-overflow-scrolling: touch;
             }
 
+            /* Table scroll - ensure horizontal scroll works on mobile */
+            .table-scroll {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -16px;
+                padding: 0 16px;
+            }
+
             .data-table {
-                font-size: 0.75rem;
-                min-width: 100%;
+                font-size: 0.7rem;
+                min-width: 800px;
+                white-space: nowrap;
             }
 
             .data-table th {
-                padding: 10px 8px;
-                font-size: 0.7rem;
+                padding: 8px 6px;
+                font-size: 0.65rem;
             }
 
             .data-table td {
-                padding: 8px 6px;
-                font-size: 0.75rem;
+                padding: 6px 4px;
+                font-size: 0.7rem;
             }
 
             /* Analysis grid - single column */
@@ -1167,7 +1185,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - V1 (EMA200 + RSI%)</h1>
-            <div class="subtitle">Generated on 2026-01-21 22:11 | Combined Dashboard</div>
+            <div class="subtitle">Generated on 2026-01-21 22:52 | Combined Dashboard</div>
         </div>
         <button class="navbar-toggle" onclick="toggleNavbarControls()" aria-label="Toggle menu">
             <span></span>
