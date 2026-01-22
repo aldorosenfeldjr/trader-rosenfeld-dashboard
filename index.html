@@ -1185,7 +1185,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - V1 (EMA200 + RSI%)</h1>
-            <div class="subtitle">Generated on 2026-01-21 22:56 | Combined Dashboard</div>
+            <div class="subtitle">Generated on 2026-01-21 22:59 | Combined Dashboard</div>
         </div>
         <button class="navbar-toggle" onclick="toggleNavbarControls()" aria-label="Toggle menu">
             <span></span>
@@ -1322,75 +1322,77 @@
             <div class="section-title">Performance by Pair</div>
             <div class="section-subtitle">Results breakdown by currency pair</div>
 
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Pair</th>
-                        <th>Total Trades</th>
-                        <th>TPs</th>
-                        <th>SLs</th>
-                        <th>Win Rate</th>
-                        <th>P&L</th>
-                    </tr>
-                </thead>
-                <tbody id="performanceTableBody">
-                    
-                    <tr>
-                        <td class="pair-name">EURGBP</td>
-                        <td>39</td>
-                        <td class="profit">0</td>
-                        <td class="loss">39</td>
-                        <td>0.0%</td>
-                        <td class="loss">$-28.52</td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="pair-name">EURJPY</td>
-                        <td>26</td>
-                        <td class="profit">0</td>
-                        <td class="loss">26</td>
-                        <td>0.0%</td>
-                        <td class="loss">$-38.97</td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="pair-name">EURUSD</td>
-                        <td>42</td>
-                        <td class="profit">0</td>
-                        <td class="loss">42</td>
-                        <td>0.0%</td>
-                        <td class="loss">$-46.85</td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="pair-name">GBPJPY</td>
-                        <td>31</td>
-                        <td class="profit">2</td>
-                        <td class="loss">29</td>
-                        <td>6.5%</td>
-                        <td class="loss">$-27.80</td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="pair-name">GBPUSD</td>
-                        <td>41</td>
-                        <td class="profit">2</td>
-                        <td class="loss">39</td>
-                        <td>4.9%</td>
-                        <td class="loss">$-43.22</td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="pair-name">USDJPY</td>
-                        <td>25</td>
-                        <td class="profit">3</td>
-                        <td class="loss">22</td>
-                        <td>12.0%</td>
-                        <td class="loss">$-5.27</td>
-                    </tr>
-                    
-                </tbody>
-            </table>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Pair</th>
+                            <th>Total Trades</th>
+                            <th>TPs</th>
+                            <th>SLs</th>
+                            <th>Win Rate</th>
+                            <th>P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody id="performanceTableBody">
+                        
+                        <tr>
+                            <td class="pair-name">EURGBP</td>
+                            <td>39</td>
+                            <td class="profit">0</td>
+                            <td class="loss">39</td>
+                            <td>0.0%</td>
+                            <td class="loss">$-28.52</td>
+                        </tr>
+                        
+                        <tr>
+                            <td class="pair-name">EURJPY</td>
+                            <td>26</td>
+                            <td class="profit">0</td>
+                            <td class="loss">26</td>
+                            <td>0.0%</td>
+                            <td class="loss">$-38.97</td>
+                        </tr>
+                        
+                        <tr>
+                            <td class="pair-name">EURUSD</td>
+                            <td>42</td>
+                            <td class="profit">0</td>
+                            <td class="loss">42</td>
+                            <td>0.0%</td>
+                            <td class="loss">$-46.85</td>
+                        </tr>
+                        
+                        <tr>
+                            <td class="pair-name">GBPJPY</td>
+                            <td>31</td>
+                            <td class="profit">2</td>
+                            <td class="loss">29</td>
+                            <td>6.5%</td>
+                            <td class="loss">$-27.80</td>
+                        </tr>
+                        
+                        <tr>
+                            <td class="pair-name">GBPUSD</td>
+                            <td>41</td>
+                            <td class="profit">2</td>
+                            <td class="loss">39</td>
+                            <td>4.9%</td>
+                            <td class="loss">$-43.22</td>
+                        </tr>
+                        
+                        <tr>
+                            <td class="pair-name">USDJPY</td>
+                            <td>25</td>
+                            <td class="profit">3</td>
+                            <td class="loss">22</td>
+                            <td>12.0%</td>
+                            <td class="loss">$-5.27</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Trades Table -->
@@ -4670,10 +4672,11 @@
                 const result = trade.pnl > 0 ? 'TP' : 'SL';
                 const typeClass = trade.type === 'BUY' ? 'profit' : 'loss';
 
-                const ema200 = trade.ema200 !== null && trade.ema200 !== undefined ? (trade.ema200 > 0 ? '↑ Above' : '↓ Below') : '-';
-                const trend = trade.trend || '-';
-                const rsi = trade.rsi !== null && trade.rsi !== undefined ? trade.rsi.toFixed(1) + '%' : '-';
-                const atr = trade.atr !== null && trade.atr !== undefined ? '$' + trade.atr.toFixed(2) : '-';
+                // Handle indicator values - show '-' if not available
+                const ema200 = (trade.ema200 !== null && trade.ema200 !== undefined && trade.ema200 !== 0) ? (trade.ema200 > 0 ? '↑ Above' : '↓ Below') : '-';
+                const trend = (trade.trend && trade.trend !== '' && trade.trend !== 'null') ? trade.trend : '-';
+                const rsi = (trade.rsi !== null && trade.rsi !== undefined && trade.rsi > 0) ? trade.rsi.toFixed(1) + '%' : '-';
+                const atr = (trade.atr !== null && trade.atr !== undefined && trade.atr > 0) ? '$' + trade.atr.toFixed(5) : '-';
 
                 html += `
                     <tr>
