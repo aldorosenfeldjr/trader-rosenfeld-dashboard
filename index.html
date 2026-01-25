@@ -1121,7 +1121,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - Executive Dashboard</h1>
-            <div class="subtitle">Generated on 2026-01-25 18:42 | Trades since 2026-01-04</div>
+            <div class="subtitle">Generated on 2026-01-25 18:47 | Trades since 2026-01-04</div>
         </div>
         
         <div class="filters-inline">
@@ -4795,8 +4795,8 @@
                 const minutes = Math.floor((durationHours % 1) * 60);
                 const durationStr = `${hours}h${minutes}m`;
 
-                // Format values (TSL = Trailing Stop Loss with profit, should be green)
-                const resultClass = (trade.result === 'TP' || trade.result === 'TSL') ? 'profit' : 'loss';
+                // Format values - color based on P&L value, not result type
+                const resultClass = trade.pnl >= 0 ? 'profit' : 'loss';
                 const pnlClass = trade.pnl >= 0 ? 'profit' : 'loss';
                 const typeClass = trade.type === 'BUY' ? 'profit' : 'loss';
 
