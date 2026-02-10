@@ -17,10 +17,10 @@ This repository hosts the live HTML dashboard for the Trader Rosenfeld MT5 tradi
 
 | Version | Signal Logic | Entry Timing | Exit Strategy |
 |---------|--------------|--------------|---------------|
-| V1 | EMA200 + RSI% | Half-candle | Fixed TP/SL |
-| V2 | ATR% + Direction | Half-candle | Fixed TP/SL |
-| V3 | ATR% + Direction | Half-candle | Trailing SL |
-| V4 | EMA200 + RSI% | Half-candle | Trailing SL |
+| V1 | EMA200 + RSI% | Every 60s | Fixed TP/SL |
+| V2 | ATR% + Direction | Half-candle (2h) | Fixed TP/SL |
+| V3 | ATR% + Direction | Half-candle (2h) | Trailing SL |
+| V4 | EMA200 + RSI% | Every 60s | Trailing SL |
 | V5 | ATR% + Direction | Every 30min | Fixed TP/SL |
 | V6 | ATR% + Direction | Every 30min | Dynamic Trailing |
 
