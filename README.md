@@ -2,74 +2,77 @@
 
 **Automated Trading Bot Dashboard** - GitHub Pages Repository
 
-**Latest Update**: 2026-01-18 ✅ V3.0 Operational
+**Latest Update**: 2026-02-10
+**Version**: 6.1.2 (6 Bot Versions: V1-V6)
 
 This repository hosts the live HTML dashboard for the Trader Rosenfeld MT5 trading bot.
 
-## 📊 View Live Dashboard
+## View Live Dashboard
 
 **URL**: https://aldorosenfeldjr.github.io/trader-rosenfeld-dashboard/
 
-**Current Version**: V3.0 with Trailing Stop Loss System
+**Password Protected**: Yes (contact owner for access)
 
-## 🔄 Automatic Updates
+## Bot Versions
 
-- **Generated**: Daily at 17:00 Brasília time (20:00 UTC)
+| Version | Signal Logic | Entry Timing | Exit Strategy |
+|---------|--------------|--------------|---------------|
+| V1 | EMA200 + RSI% | Half-candle | Fixed TP/SL |
+| V2 | ATR% + Direction | Half-candle | Fixed TP/SL |
+| V3 | ATR% + Direction | Half-candle | Trailing SL |
+| V4 | EMA200 + RSI% | Half-candle | Trailing SL |
+| V5 | ATR% + Direction | Every 30min | Fixed TP/SL |
+| V6 | ATR% + Direction | Every 30min | Dynamic Trailing |
+
+## Automatic Updates
+
+- **Generated**: Daily at 17:00 Brasilia (20:00 UTC)
 - **Uploaded**: Automatically at 17:02 via scheduler
 - **Deployment**: GitHub Pages updates within 1-2 minutes
-- **Status**: ✅ Active and working (V3 configuration validated)
+- **Status**: Active
 
-## 📁 Repository Location
+## Repository Location
 
 This repository is located within the main bot project:
 ```
 D:\Trader_Rosenfeld\github-pages\
 ```
 
-## 🛠️ How It Works
+## How It Works
 
-### V3 System (Current)
-1. Bot V3 generates dashboard at 20:00 UTC: `reports/v3/dashboard/Rosenfeld_dashboard_DD-MM-YYYY.html`
-2. Cloud upload scheduler copies to `github-pages/index.html` at 20:02 UTC
+1. Combined dashboard generated with all V1-V6 trade data
+2. Cloud upload scheduler copies to `github-pages/index.html`
 3. Git commits and pushes automatically
-4. GitHub Pages deploys updated dashboard within 1-2 minutes
+4. GitHub Pages deploys updated dashboard
 
-### Previous Versions
-- **V2**: Generates to `reports/v2/dashboard/`
-- **V1**: Generates to `reports/v1/dashboard/`
-
-All versions upload to the same GitHub Pages repository, with V3 being the current production version.
-
-## ⚙️ Manual Update
-
-To manually update the dashboard:
+## Manual Update
 
 ```bash
 cd D:\Trader_Rosenfeld
 python upload_dashboard_github.py
 ```
 
-## 📱 Access
+## Dashboard Features
 
-The dashboard is optimized for:
-- Desktop browsers
-- Mobile browsers (fully responsive)
-- Tablet browsers
-- PDF export via browser print function
+- Version toggle (V1-V6) with instant filtering
+- Equity curve chart
+- Performance by pair analysis
+- Trade history with export
+- Mobile responsive design
+- PDF export via browser print
 
-**Recommended**: Access via latest V3.0 dashboard for Trailing Stop Loss metrics
+## Security Note
 
-## 🔐 Security Note
+This is a **public repository**. The dashboard shows:
+- Trading performance metrics
+- P&L statistics
+- Trade history
 
-This is a **public repository** on GitHub. The dashboard shows:
-- ✅ Trading performance metrics
-- ✅ P&L statistics
-- ✅ Trade history
-- ❌ Does NOT show broker credentials
-- ❌ Does NOT show strategy parameters
+Does NOT expose:
+- Broker credentials
+- Strategy parameters
+- Account numbers
 
 ---
 
-**Last Updated**: Auto-generated daily by Trader Rosenfeld automated reporting system
-
-**Bot Version**: 1.2.0
+**Auto-generated daily by Trader Rosenfeld automated reporting system**
