@@ -571,7 +571,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - V1 (EMA200 + RSI%)</h1>
-            <div class="subtitle">Generated on 2026-02-19 20:02 | Combined Dashboard</div>
+            <div class="subtitle">Generated on 2026-02-19 21:45 | Combined Dashboard</div>
         </div>
         <button class="navbar-toggle" onclick="toggleNavbarControls()" aria-label="Toggle menu">
             <span></span><span></span><span></span>
@@ -707,7 +707,7 @@
         </div>
         <div class="section">
             <div class="section-title">Equity Curve</div>
-            <div class="section-subtitle" id="equitySubtitle">Cumulative P&L over time: <span id="equityTotalPnl" class="neutral">$0.00</span> | Max Drawdown: <span id="equityMaxDD" class="loss">$0.00</span></div>
+            <div class="section-subtitle" id="equitySubtitle">Cumulative P&L over time: <span id="equityTotalPnl" class="neutral">$0.00</span> (<span id="equityPnlPerDay" class="neutral">$0.00/day</span>) | Max Drawdown: <span id="equityMaxDD" class="loss">$0.00</span></div>
             <div class="chart-container">
                 <canvas id="equityChart"></canvas>
             </div>
@@ -4408,7 +4408,7 @@
         }
 
         function calculateMaxDrawdown(trades) {
-            if (!trades || trades.length === 0) return { totalPnl: 0, maxDrawdown: 0 };
+            if (!trades || trades.length === 0) return { totalPnl: 0, maxDrawdown: 0, daysSinceFirst: 0, pnlPerDay: 0 };
 
             const sortedTrades = [...trades].sort((a, b) =>
                 new Date(a.close_time) - new Date(b.close_time)
@@ -4425,18 +4425,30 @@
                 if (drawdown > maxDD) maxDD = drawdown;
             });
 
-            return { totalPnl: cumulative, maxDrawdown: maxDD };
+            // Calculate days since first trade
+            const firstDate = new Date(sortedTrades[0].close_time);
+            const lastDate = new Date(sortedTrades[sortedTrades.length - 1].close_time);
+            const daysDiff = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)));
+            const pnlPerDay = cumulative / daysDiff;
+
+            return { totalPnl: cumulative, maxDrawdown: maxDD, daysSinceFirst: daysDiff, pnlPerDay: pnlPerDay };
         }
 
         function updateEquitySubtitle(trades) {
-            const { totalPnl, maxDrawdown } = calculateMaxDrawdown(trades);
+            const { totalPnl, maxDrawdown, pnlPerDay } = calculateMaxDrawdown(trades);
 
             const pnlEl = document.getElementById('equityTotalPnl');
             const ddEl = document.getElementById('equityMaxDD');
+            const pnlPerDayEl = document.getElementById('equityPnlPerDay');
 
             if (pnlEl) {
                 pnlEl.textContent = '$' + totalPnl.toFixed(2);
                 pnlEl.className = totalPnl >= 0 ? 'profit' : 'loss';
+            }
+
+            if (pnlPerDayEl) {
+                pnlPerDayEl.textContent = '$' + pnlPerDay.toFixed(2) + '/day';
+                pnlPerDayEl.className = pnlPerDay >= 0 ? 'profit' : 'loss';
             }
 
             if (ddEl) {
