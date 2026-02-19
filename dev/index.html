@@ -571,7 +571,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - V1 (EMA200 + RSI%)</h1>
-            <div class="subtitle">Generated on 2026-02-19 21:45 | Combined Dashboard</div>
+            <div class="subtitle">Generated on 2026-02-19 22:13 | Combined Dashboard</div>
         </div>
         <button class="navbar-toggle" onclick="toggleNavbarControls()" aria-label="Toggle menu">
             <span></span><span></span><span></span>
@@ -707,7 +707,10 @@
         </div>
         <div class="section">
             <div class="section-title">Equity Curve</div>
-            <div class="section-subtitle" id="equitySubtitle">Cumulative P&L over time: <span id="equityTotalPnl" class="neutral">$0.00</span> (<span id="equityPnlPerDay" class="neutral">$0.00/day</span>) | Max Drawdown: <span id="equityMaxDD" class="loss">$0.00</span></div>
+            <div class="section-subtitle" id="equitySubtitle">
+                <div>Cumulative P&L over time: <span id="equityTotalPnl" class="neutral">$0.00</span> (<span id="equityPnlPerDay" class="neutral">$0.00/day</span>) | <span id="equityDaysCount">0 days</span></div>
+                <div>Max Drawdown: <span id="equityMaxDD" class="loss">$0.00</span> (<span id="equityMaxDDPercent" class="loss">0.00%</span>)</div>
+            </div>
             <div class="chart-container">
                 <canvas id="equityChart"></canvas>
             </div>
@@ -4243,7 +4246,15 @@
         window.v7TradesData = [];
         window.v7MetricsData = {"total_trades": 0, "tp_count": 0, "sl_count": 0, "win_rate": 0.0, "total_profit": 0.0, "total_loss": 0.0, "net_pnl": 0.0, "avg_win": 0.0, "avg_loss": 0.0, "profit_factor": 0.0, "max_win": 0.0, "max_loss": 0.0, "avg_duration_hours": 0.0};
         window.v7EquityData = [];
+        window.v1InitialBalance = 200.0;
+        window.v2InitialBalance = 200.0;
+        window.v3InitialBalance = 200.0;
+        window.v4InitialBalance = 200.0;
+        window.v5InitialBalance = 200.0;
+        window.v6InitialBalance = 200.0;
+        window.v7InitialBalance = 200.0;
         window.allTradesData = window.v1TradesData;
+        window.currentInitialBalance = window.v1InitialBalance;
         function toggleNavbarControls() {
             const controls = document.getElementById('navbarControls');
             controls.classList.toggle('show');
@@ -4434,12 +4445,14 @@
             return { totalPnl: cumulative, maxDrawdown: maxDD, daysSinceFirst: daysDiff, pnlPerDay: pnlPerDay };
         }
 
-        function updateEquitySubtitle(trades) {
-            const { totalPnl, maxDrawdown, pnlPerDay } = calculateMaxDrawdown(trades);
+        function updateEquitySubtitle(trades, initialBalance) {
+            const { totalPnl, maxDrawdown, daysSinceFirst, pnlPerDay } = calculateMaxDrawdown(trades);
 
             const pnlEl = document.getElementById('equityTotalPnl');
             const ddEl = document.getElementById('equityMaxDD');
             const pnlPerDayEl = document.getElementById('equityPnlPerDay');
+            const daysEl = document.getElementById('equityDaysCount');
+            const ddPercentEl = document.getElementById('equityMaxDDPercent');
 
             if (pnlEl) {
                 pnlEl.textContent = '$' + totalPnl.toFixed(2);
@@ -4451,9 +4464,19 @@
                 pnlPerDayEl.className = pnlPerDay >= 0 ? 'profit' : 'loss';
             }
 
+            if (daysEl) {
+                daysEl.textContent = daysSinceFirst + ' days';
+            }
+
             if (ddEl) {
                 ddEl.textContent = '$' + maxDrawdown.toFixed(2);
                 ddEl.className = 'loss';
+            }
+
+            if (ddPercentEl && initialBalance > 0) {
+                const ddPercent = (maxDrawdown / initialBalance) * 100;
+                ddPercentEl.textContent = ddPercent.toFixed(2) + '%';
+                ddPercentEl.className = 'loss';
             }
         }
 
@@ -4741,7 +4764,7 @@
             document.getElementById('btn' + version.toUpperCase()).classList.add('active');
 
             // Get version-specific data
-            let tradesData, metricsData, equityData;
+            let tradesData, metricsData, equityData, initialBalance;
             let versionTitle = '';
 
             switch(version) {
@@ -4749,42 +4772,49 @@
                     tradesData = window.v1TradesData || [];
                     metricsData = window.v1MetricsData || {};
                     equityData = window.v1EquityData || [];
+                    initialBalance = window.v1InitialBalance || 200;
                     versionTitle = 'V1 (EMA200 + RSI%)';
                     break;
                 case 'v2':
                     tradesData = window.v2TradesData || [];
                     metricsData = window.v2MetricsData || {};
                     equityData = window.v2EquityData || [];
+                    initialBalance = window.v2InitialBalance || 200;
                     versionTitle = 'V2 (ATR% + Direction)';
                     break;
                 case 'v3':
                     tradesData = window.v3TradesData || [];
                     metricsData = window.v3MetricsData || {};
                     equityData = window.v3EquityData || [];
+                    initialBalance = window.v3InitialBalance || 200;
                     versionTitle = 'V3 (ATR% + Trailing)';
                     break;
                 case 'v4':
                     tradesData = window.v4TradesData || [];
                     metricsData = window.v4MetricsData || {};
                     equityData = window.v4EquityData || [];
+                    initialBalance = window.v4InitialBalance || 200;
                     versionTitle = 'V4 (EMA + RSI + Trailing)';
                     break;
                 case 'v5':
                     tradesData = window.v5TradesData || [];
                     metricsData = window.v5MetricsData || {};
                     equityData = window.v5EquityData || [];
+                    initialBalance = window.v5InitialBalance || 200;
                     versionTitle = 'V5 (ATR% + 30min)';
                     break;
                 case 'v6':
                     tradesData = window.v6TradesData || [];
                     metricsData = window.v6MetricsData || {};
                     equityData = window.v6EquityData || [];
+                    initialBalance = window.v6InitialBalance || 200;
                     versionTitle = 'V6 (Dynamic Trailing)';
                     break;
                 case 'v7':
                     tradesData = window.v7TradesData || [];
                     metricsData = window.v7MetricsData || {};
                     equityData = window.v7EquityData || [];
+                    initialBalance = window.v7InitialBalance || 200;
                     versionTitle = 'V7 (Breakeven Stop)';
                     break;
             }
@@ -4793,8 +4823,9 @@
             const titleEl = document.querySelector('.navbar h1');
             if (titleEl) titleEl.textContent = 'Trader Rosenfeld - ' + versionTitle;
 
-            // Store current trades for filters
+            // Store current trades and initial balance for filters
             window.allTradesData = tradesData;
+            window.currentInitialBalance = initialBalance;
 
             // Update dashboard components
             updateMetricsCards(metricsData);
@@ -4802,7 +4833,7 @@
             updateDetailedPairAnalysis(tradesData);
             updateEquityChart(equityData, window.equityChart);
             updateTradesTable(tradesData);
-            updateEquitySubtitle(tradesData);
+            updateEquitySubtitle(tradesData, window.currentInitialBalance);
 
             // Update filter counts
             const totalCountEl = document.getElementById('totalCount');
@@ -4926,10 +4957,10 @@
             });
 
             updateEquityChart(equityData, window.equityChart);
-            updateEquitySubtitle(filteredTrades);
+            updateEquitySubtitle(filteredTrades, window.currentInitialBalance);
         }
         
-        updateEquitySubtitle(window.allTradesData);
+        updateEquitySubtitle(window.allTradesData, window.currentInitialBalance);
     </script>
     <script>
         let failedAttempts = 0;
