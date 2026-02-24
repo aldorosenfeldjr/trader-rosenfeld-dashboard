@@ -570,8 +570,8 @@
     </div>
     <div class="navbar">
         <div>
-            <h1>Trader Rosenfeld - V1 (EMA200 + RSI%)</h1>
-            <div class="subtitle">Generated on 2026-02-23 23:27 | Combined Dashboard</div>
+            <h1>Trader Rosenfeld - V2 (ATR% + Direction)</h1>
+            <div class="subtitle">Generated on 2026-02-24 20:02 | Combined Dashboard</div>
         </div>
         <button class="navbar-toggle" onclick="toggleNavbarControls()" aria-label="Toggle menu">
             <span></span><span></span><span></span>
@@ -579,10 +579,10 @@
         <div class="navbar-controls" id="navbarControls">
             
         <div class="version-toggle">
-            <button class="version-btn active" id="btnV1" onclick="switchVersion('v1')">
-                <span class="version-btn-icon">📊</span>
-                <span class="version-btn-text">V1</span>
-                <span class="version-btn-subtitle">EMA200 + RSI%</span>
+            <button class="version-btn active" id="btnV2" onclick="switchVersion('v2')">
+                <span class="version-btn-icon">📈</span>
+                <span class="version-btn-text">V2</span>
+                <span class="version-btn-subtitle">ATR% + Direction</span>
             </button>
         </div>
             <div class="filters-inline">
@@ -595,21 +595,23 @@
                         </div>
                         <div class="dropdown-options" id="pairDropdownOptions">
                             <label class="dropdown-option"><input type="checkbox" value="ALL" checked onchange="handlePairSelection(this)"> Todos</label>
+            <label class="dropdown-option"><input type="checkbox" value="EURJPY" checked onchange="handlePairSelection(this)"> EURJPY</label>
+            <label class="dropdown-option"><input type="checkbox" value="EURUSD" checked onchange="handlePairSelection(this)"> EURUSD</label>
 
                         </div>
                     </div>
                 </div>
                 <div class="filter-inline-item">
                     <span class="filter-inline-label">De:</span>
-                    <input type="datetime-local" id="dateFrom" class="filter-inline-input" value="2026-02-23T20:27" onchange="applyFilters()">
+                    <input type="datetime-local" id="dateFrom" class="filter-inline-input" value="2026-02-22T23:27" onchange="applyFilters()">
                 </div>
                 <div class="filter-inline-item">
                     <span class="filter-inline-label">Até:</span>
-                    <input type="datetime-local" id="dateTo" class="filter-inline-input" value="2026-02-23T20:27" onchange="applyFilters()">
+                    <input type="datetime-local" id="dateTo" class="filter-inline-input" value="2026-02-24T07:29" onchange="applyFilters()">
                 </div>
                 <button class="filter-inline-reset" onclick="resetFilters()">↺</button>
                 <div class="filter-inline-count">
-                    <span id="filteredCount">0</span>/<span id="totalCount">0</span>
+                    <span id="filteredCount">2</span>/<span id="totalCount">2</span>
                 </div>
             </div>
         </div>
@@ -622,49 +624,49 @@
             <div class="exec-grid">
                 <div class="exec-card">
                     <div class="exec-card-label">Total Trades</div>
-                    <div class="exec-card-value">0</div>
+                    <div class="exec-card-value">2</div>
                     <div class="exec-card-subtitle">Closed positions</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Win Rate</div>
-                    <div class="exec-card-value loss">0.0%</div>
-                    <div class="exec-card-subtitle">0 TPs vs 0 SLs</div>
+                    <div class="exec-card-value profit">50.0%</div>
+                    <div class="exec-card-subtitle">1 TPs vs 1 SLs</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Total P&L</div>
-                    <div class="exec-card-value profit">$0.00</div>
+                    <div class="exec-card-value profit">$0.56</div>
                     <div class="exec-card-subtitle">Cumulative net profit</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Profit Factor</div>
-                    <div class="exec-card-value">0.00</div>
+                    <div class="exec-card-value">1.11</div>
                     <div class="exec-card-subtitle">Gross profit / loss</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Avg Win</div>
-                    <div class="exec-card-value profit">$0.00</div>
+                    <div class="exec-card-value profit">$5.54</div>
                     <div class="exec-card-subtitle">Per winning trade</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Avg Loss</div>
-                    <div class="exec-card-value loss">$0.00</div>
+                    <div class="exec-card-value loss">$4.98</div>
                     <div class="exec-card-subtitle">Per losing trade</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Max Win</div>
-                    <div class="exec-card-value profit">$0.00</div>
+                    <div class="exec-card-value profit">$5.54</div>
                     <div class="exec-card-subtitle">Best trade</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Max Loss</div>
-                    <div class="exec-card-value loss">$0.00</div>
+                    <div class="exec-card-value loss">$4.98</div>
                     <div class="exec-card-subtitle">Worst trade</div>
                 </div>
             </div>
@@ -696,6 +698,22 @@
                     </thead>
                     <tbody id="performanceTableBody">
                         
+                <tr>
+                    <td class="pair-name">EURJPY</td>
+                    <td>1</td>
+                    <td class="profit">1</td>
+                    <td class="loss">0</td>
+                    <td>100.0%</td>
+                    <td class="profit">$5.54</td>
+                </tr>
+                <tr>
+                    <td class="pair-name">EURUSD</td>
+                    <td>1</td>
+                    <td class="profit">0</td>
+                    <td class="loss">1</td>
+                    <td>0.0%</td>
+                    <td class="loss">$-4.98</td>
+                </tr>
                     </tbody>
                 </table>
             </div>
@@ -705,6 +723,72 @@
             <div class="section-subtitle">In-depth metrics and insights per currency pair</div>
             <div class="analysis-grid" id="analysisCardsGrid">
                 
+            <div class="analysis-card">
+                <div class="analysis-header">
+                    <span class="pair-name-large">EURJPY</span>
+                    <span class="risk-badge profit">Low Risk</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Annual Return</span>
+                    <span class="metric-value profit">1011.0%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Profit Factor</span>
+                    <span class="metric-value">0.00</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Win Rate</span>
+                    <span class="metric-value">100.0%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Max Drawdown</span>
+                    <span class="metric-value loss">0.00%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total Trades</span>
+                    <span class="metric-value">1</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Net P&L</span>
+                    <span class="metric-value profit">$5.54</span>
+                </div>
+                <div class="analysis-insight">
+                    <p>Significant losses accumulated. High-risk pair requiring immediate attention.</p>
+                </div>
+            </div>
+            <div class="analysis-card">
+                <div class="analysis-header">
+                    <span class="pair-name-large">EURUSD</span>
+                    <span class="risk-badge loss">High Risk</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Annual Return</span>
+                    <span class="metric-value loss">-908.9%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Profit Factor</span>
+                    <span class="metric-value">0.00</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Win Rate</span>
+                    <span class="metric-value">0.0%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Max Drawdown</span>
+                    <span class="metric-value loss">2.49%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total Trades</span>
+                    <span class="metric-value">1</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Net P&L</span>
+                    <span class="metric-value loss">$-4.98</span>
+                </div>
+                <div class="analysis-insight">
+                    <p>Significant losses accumulated. High-risk pair requiring immediate attention.</p>
+                </div>
+            </div>
             </div>
         </div>
         <div class="section">
@@ -732,6 +816,38 @@
                     </thead>
                     <tbody id="tradesTableBody">
                         
+                <tr data-version="V1">
+                    <td>301134703</td>
+                    <td class="pair-name">EURJPY</td>
+                    <td class="profit">BUY</td>
+                    <td>2026-02-23 07:27</td>
+                    <td>2026-02-24 07:29</td>
+                    <td>24h1m</td>
+                    <td><span class="version-badge">V1</span></td>
+                    <td class="ind1">183.36790</td>
+                    <td class="ind2">Média</td>
+                    <td class="ind3">55.95</td>
+                    <td>0.44401</td>
+                    <td class="extra-indicators" title="RSI%=3.4%, FEMA=5, FRSI=4">RSI%=3.4%, FEMA=5, FRSI=4</td>
+                    <td class="profit">TP</td>
+                    <td class="profit">$5.54</td>
+                </tr>
+                <tr data-version="V1">
+                    <td>300960899</td>
+                    <td class="pair-name">EURUSD</td>
+                    <td class="profit">BUY</td>
+                    <td>2026-02-22 23:27</td>
+                    <td>2026-02-24 04:28</td>
+                    <td>29h1m</td>
+                    <td><span class="version-badge">V1</span></td>
+                    <td class="ind1">1.18089</td>
+                    <td class="ind2">Média</td>
+                    <td class="ind3">55.56</td>
+                    <td>0.00245</td>
+                    <td class="extra-indicators" title="RSI%=21.2%, FEMA=5, FRSI=4">RSI%=21.2%, FEMA=5, FRSI=4</td>
+                    <td class="loss">SL</td>
+                    <td class="loss">$-4.98</td>
+                </tr>
                     </tbody>
                 </table>
             </div>
@@ -746,9 +862,9 @@
         window.v1TradesData = [];
         window.v1MetricsData = {"total_trades": 0, "tp_count": 0, "sl_count": 0, "win_rate": 0.0, "total_profit": 0.0, "total_loss": 0.0, "net_pnl": 0.0, "avg_win": 0.0, "avg_loss": 0.0, "profit_factor": 0.0, "max_win": 0.0, "max_loss": 0.0, "avg_duration_hours": 0.0};
         window.v1EquityData = [];
-        window.v2TradesData = [];
-        window.v2MetricsData = {"total_trades": 0, "tp_count": 0, "sl_count": 0, "win_rate": 0.0, "total_profit": 0.0, "total_loss": 0.0, "net_pnl": 0.0, "avg_win": 0.0, "avg_loss": 0.0, "profit_factor": 0.0, "max_win": 0.0, "max_loss": 0.0, "avg_duration_hours": 0.0};
-        window.v2EquityData = [];
+        window.v2TradesData = [{"ticket": 300960899, "symbol": "EURUSDm", "open_time": "2026-02-22 23:27:38", "close_time": "2026-02-24 04:28:46", "type": "BUY", "volume": 0.01, "pnl": -4.98, "result": "SL", "version": "V1", "ema200": 1.18089, "rsi": 55.56, "atr": 0.00245, "trend": "M\u00e9dia", "trend_ema_pct": null, "rsi_pct": 21.1753, "atr_percent": 1.1556, "atr_signal": "Buy", "direction": "UP", "direction_percent": null, "fator_atr": null, "fator_atr_tp": 2.0, "fator_atr_sl": 2.0, "fator_ema": 5, "fator_rsi": 4, "trailing_stop": null, "dynamic_trailing": null, "signal_30min": null}, {"ticket": 301134703, "symbol": "EURJPYm", "open_time": "2026-02-23 07:27:14", "close_time": "2026-02-24 07:29:11", "type": "BUY", "volume": 0.01, "pnl": 5.54, "result": "TP", "version": "V1", "ema200": 183.3679, "rsi": 55.95, "atr": 0.44401, "trend": "M\u00e9dia", "trend_ema_pct": null, "rsi_pct": 3.4141, "atr_percent": 1.0071, "atr_signal": "Buy", "direction": "UP", "direction_percent": null, "fator_atr": null, "fator_atr_tp": 2.0, "fator_atr_sl": 2.0, "fator_ema": 5, "fator_rsi": 4, "trailing_stop": null, "dynamic_trailing": null, "signal_30min": null}];
+        window.v2MetricsData = {"total_trades": 2, "tp_count": 1, "sl_count": 1, "win_rate": 50.0, "total_profit": 5.54, "total_loss": -4.98, "net_pnl": 0.5599999999999996, "avg_win": 5.54, "avg_loss": -4.98, "profit_factor": 1.112449799196787, "max_win": 5.54, "max_loss": -4.98, "avg_duration_hours": 26.525694444444444};
+        window.v2EquityData = [{"date": "2026-02-24 04:28", "cumulative_pnl": -4.98, "symbol": "EURUSD", "type": "BUY", "trade_pnl": -4.98, "open_time": "2026-02-22 23:27"}, {"date": "2026-02-24 07:29", "cumulative_pnl": 0.5599999999999996, "symbol": "EURJPY", "type": "BUY", "trade_pnl": 5.54, "open_time": "2026-02-23 07:27"}];
         window.v3TradesData = [];
         window.v3MetricsData = {"total_trades": 0, "tp_count": 0, "sl_count": 0, "win_rate": 0.0, "total_profit": 0.0, "total_loss": 0.0, "net_pnl": 0.0, "avg_win": 0.0, "avg_loss": 0.0, "profit_factor": 0.0, "max_win": 0.0, "max_loss": 0.0, "avg_duration_hours": 0.0};
         window.v3EquityData = [];
@@ -778,17 +894,17 @@
             controls.classList.toggle('show');
         }
         
-        const tradeDetails = [];
+        const tradeDetails = [{"symbol": "EURUSD", "type": "BUY", "trade_pnl": -4.98, "open_time": "2026-02-22 23:27"}, {"symbol": "EURJPY", "type": "BUY", "trade_pnl": 5.54, "open_time": "2026-02-23 07:27"}];
         window.tradeDetails = tradeDetails;
 
         const ctx = document.getElementById('equityChart').getContext('2d');
         window.equityChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: [],
+                labels: ["2026-02-24 04:28", "2026-02-24 07:29"],
                 datasets: [{
                     label: 'Cumulative P&L',
-                    data: [],
+                    data: [-4.98, 0.5599999999999996],
                     borderColor: '#60a5fa',
                     backgroundColor: 'rgba(96, 165, 250, 0.1)',
                     borderWidth: 2,
@@ -868,7 +984,7 @@
         });
         
         function exportToExcel() {
-            const allTrades = [];
+            const allTrades = [{"Ticket": 301134703, "Version": "V1", "Pair": "EURJPY", "Type": "BUY", "Opening (GMT+0)": "2026-02-23 07:27:14", "Closing (GMT+0)": "2026-02-24 07:29:11", "Duration": "24h1m", "Result": "TP", "P&L": 5.54, "EMA200": 183.3679, "Trend": "M\u00e9dia", "RSI": 55.95, "ATR": 0.44401, "TrendEMA%": "", "RSI%": 3.41, "ATR%": 1.01, "ATRSignal": "Buy", "Direction": "UP", "Direction%": "", "FatorATR_TP": 2.0, "FatorATR_SL": 2.0, "FatorEMA": 5, "FatorRSI": 4, "TrailingStop": "", "DynamicTrailing": "", "30minSignal": ""}, {"Ticket": 300960899, "Version": "V1", "Pair": "EURUSD", "Type": "BUY", "Opening (GMT+0)": "2026-02-22 23:27:38", "Closing (GMT+0)": "2026-02-24 04:28:46", "Duration": "29h1m", "Result": "SL", "P&L": -4.98, "EMA200": 1.18089, "Trend": "M\u00e9dia", "RSI": 55.56, "ATR": 0.00245, "TrendEMA%": "", "RSI%": 21.18, "ATR%": 1.16, "ATRSignal": "Buy", "Direction": "UP", "Direction%": "", "FatorATR_TP": 2.0, "FatorATR_SL": 2.0, "FatorEMA": 5, "FatorRSI": 4, "TrailingStop": "", "DynamicTrailing": "", "30minSignal": ""}];
             const ws = XLSX.utils.json_to_sheet(allTrades);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Trades");
