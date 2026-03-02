@@ -583,7 +583,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - V5 (ATR% + 30min)</h1>
-            <div class="subtitle">Generated on 2026-03-02 09:43 | Combined Dashboard</div>
+            <div class="subtitle">Generated on 2026-03-02 10:04 | Combined Dashboard</div>
         </div>
         <button class="navbar-toggle" onclick="toggleNavbarControls()" aria-label="Toggle menu">
             <span></span><span></span><span></span>
@@ -683,26 +683,26 @@
 
                 <div class="exec-card">
                     <div class="exec-card-label">Total Gain</div>
-                    <div class="exec-card-value profit">$456.02</div>
+                    <div class="exec-card-value">$456.02</div>
                     <div class="exec-card-subtitle">Gross profit</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Avg Win</div>
-                    <div class="exec-card-value profit">$6.00</div>
+                    <div class="exec-card-value">$6.00</div>
                     <div class="exec-card-subtitle">Per winning trade</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Max Win</div>
-                    <div class="exec-card-value profit">$9.77</div>
+                    <div class="exec-card-value">$9.77</div>
                     <div class="exec-card-subtitle">Best trade</div>
                 </div>
 
                 <!-- Row 2: Win Rate, Est. Annual Return, Total Loss, Avg Loss, Max Loss -->
                 <div class="exec-card">
                     <div class="exec-card-label">Win Rate</div>
-                    <div class="exec-card-value profit">59.4%</div>
+                    <div class="exec-card-value">59.4%</div>
                     <div class="exec-card-subtitle">76 TPs vs 52 SLs</div>
                 </div>
 
@@ -714,19 +714,19 @@
 
                 <div class="exec-card">
                     <div class="exec-card-label">Total Loss</div>
-                    <div class="exec-card-value loss">$339.01</div>
+                    <div class="exec-card-value">$339.01</div>
                     <div class="exec-card-subtitle">Gross loss</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Avg Loss</div>
-                    <div class="exec-card-value loss">$6.52</div>
+                    <div class="exec-card-value">$6.52</div>
                     <div class="exec-card-subtitle">Per losing trade</div>
                 </div>
 
                 <div class="exec-card">
                     <div class="exec-card-label">Max Loss</div>
-                    <div class="exec-card-value loss">$10.52</div>
+                    <div class="exec-card-value">$10.52</div>
                     <div class="exec-card-subtitle">Worst trade</div>
                 </div>
             </div>
@@ -3291,10 +3291,8 @@
                 // Card 4: Max Win
                 cards[4].querySelector('.exec-card-value').textContent = '$' + metrics.max_win.toFixed(2);
 
-                // Card 5: Win Rate
-                const winRateEl = cards[5].querySelector('.exec-card-value');
-                winRateEl.textContent = metrics.win_rate.toFixed(1) + '%';
-                winRateEl.className = 'exec-card-value ' + (metrics.win_rate >= 50 ? 'profit' : 'loss');
+                // Card 5: Win Rate (no conditional formatting - neutral color like Total Trades)
+                cards[5].querySelector('.exec-card-value').textContent = metrics.win_rate.toFixed(1) + '%';
                 cards[5].querySelector('.exec-card-subtitle').textContent = metrics.tp_count + ' TPs vs ' + metrics.sl_count + ' SLs';
 
                 // Card 6: Est. Annual Return
