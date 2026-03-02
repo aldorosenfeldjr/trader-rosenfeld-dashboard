@@ -29,8 +29,7 @@
         }
 
         .section {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.8);
             border-radius: 16px;
             padding: 30px;
             margin-bottom: 30px;
@@ -58,10 +57,9 @@
         
 
         .navbar {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.98);
             padding: 10px 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -71,6 +69,8 @@
             align-items: center;
             gap: 12px;
             min-height: 60px;
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         .navbar > div:first-child { flex-shrink: 1; min-width: 0; }
@@ -100,7 +100,7 @@
 
         .exec-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -110,12 +110,13 @@
             border-radius: 12px;
             padding: 20px;
             border: 1px solid rgba(148, 163, 184, 0.1);
-            transition: all 0.3s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            will-change: transform;
         }
 
         .exec-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             border-color: rgba(96, 165, 250, 0.3);
         }
 
@@ -181,11 +182,11 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            position: relative;
         }
         .extra-indicators:hover {
             white-space: normal;
             overflow: visible;
-            position: relative;
             z-index: 10;
             background: #1e293b;
             padding: 4px;
@@ -242,12 +243,13 @@
             border-radius: 16px;
             padding: 25px;
             border: 1px solid rgba(148, 163, 184, 0.1);
-            transition: all 0.3s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            will-change: transform;
         }
 
         .analysis-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
         }
 
         .analysis-header {
@@ -355,10 +357,11 @@
             background: rgba(30, 41, 59, 0.98);
             border: 1px solid rgba(148, 163, 184, 0.3);
             border-radius: 6px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             max-height: 250px;
             overflow-y: auto;
             z-index: 9999;
+            contain: layout;
         }
 
         .dropdown-options.show { display: block; }
@@ -459,20 +462,29 @@
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+            will-change: transform;
         }
 
         .export-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
         
 
+        @media (max-width: 1400px) {
+            .exec-grid { grid-template-columns: repeat(5, 1fr); gap: 15px; }
+        }
+
         @media (max-width: 1200px) {
+            .exec-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 900px) {
             .exec-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
@@ -571,7 +583,7 @@
     <div class="navbar">
         <div>
             <h1>Trader Rosenfeld - V2 (ATR% + Direction)</h1>
-            <div class="subtitle">Generated on 2026-03-01 23:54 | Combined Dashboard</div>
+            <div class="subtitle">Generated on 2026-03-02 02:11 | Combined Dashboard</div>
         </div>
         <button class="navbar-toggle" onclick="toggleNavbarControls()" aria-label="Toggle menu">
             <span></span><span></span><span></span>
@@ -625,16 +637,11 @@
             <div class="section-subtitle">Cumulative performance since trading started</div>
 
             <div class="exec-grid">
+                <!-- Row 1: Total Trades, Total P&L, Total Gain, Avg Win, Max Win -->
                 <div class="exec-card">
                     <div class="exec-card-label">Total Trades</div>
                     <div class="exec-card-value">10</div>
                     <div class="exec-card-subtitle">Closed positions</div>
-                </div>
-
-                <div class="exec-card">
-                    <div class="exec-card-label">Win Rate</div>
-                    <div class="exec-card-value profit">50.0%</div>
-                    <div class="exec-card-subtitle">5 TPs vs 5 SLs</div>
                 </div>
 
                 <div class="exec-card">
@@ -644,9 +651,9 @@
                 </div>
 
                 <div class="exec-card">
-                    <div class="exec-card-label">Profit Factor</div>
-                    <div class="exec-card-value">0.78</div>
-                    <div class="exec-card-subtitle">Gross profit / loss</div>
+                    <div class="exec-card-label">Total Gain</div>
+                    <div class="exec-card-value profit">$24.82</div>
+                    <div class="exec-card-subtitle">Gross profit</div>
                 </div>
 
                 <div class="exec-card">
@@ -656,15 +663,34 @@
                 </div>
 
                 <div class="exec-card">
-                    <div class="exec-card-label">Avg Loss</div>
-                    <div class="exec-card-value loss">$6.36</div>
-                    <div class="exec-card-subtitle">Per losing trade</div>
-                </div>
-
-                <div class="exec-card">
                     <div class="exec-card-label">Max Win</div>
                     <div class="exec-card-value profit">$6.93</div>
                     <div class="exec-card-subtitle">Best trade</div>
+                </div>
+
+                <!-- Row 2: Win Rate, Est. Annual Return, Total Loss, Avg Loss, Max Loss -->
+                <div class="exec-card">
+                    <div class="exec-card-label">Win Rate</div>
+                    <div class="exec-card-value profit">50.0%</div>
+                    <div class="exec-card-subtitle">5 TPs vs 5 SLs</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Est. Annual Return</div>
+                    <div class="exec-card-value loss">$-424.62</div>
+                    <div class="exec-card-subtitle">-212.3% of deposit</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Total Loss</div>
+                    <div class="exec-card-value loss">$31.80</div>
+                    <div class="exec-card-subtitle">Gross loss</div>
+                </div>
+
+                <div class="exec-card">
+                    <div class="exec-card-label">Avg Loss</div>
+                    <div class="exec-card-value loss">$6.36</div>
+                    <div class="exec-card-subtitle">Per losing trade</div>
                 </div>
 
                 <div class="exec-card">
@@ -757,7 +783,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Annual Return</span>
-                    <span class="metric-value profit">3.2%</span>
+                    <span class="metric-value profit">$391.77 (195.88%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Profit Factor</span>
@@ -769,7 +795,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Max Drawdown</span>
-                    <span class="metric-value loss">0.00%</span>
+                    <span class="metric-value loss">$0.00 (0.00%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Total Trades</span>
@@ -790,7 +816,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Annual Return</span>
-                    <span class="metric-value profit">5.7%</span>
+                    <span class="metric-value profit">$696.54 (348.27%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Profit Factor</span>
@@ -802,7 +828,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Max Drawdown</span>
-                    <span class="metric-value loss">0.00%</span>
+                    <span class="metric-value loss">$0.00 (0.00%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Total Trades</span>
@@ -823,7 +849,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Annual Return</span>
-                    <span class="metric-value loss">-4.7%</span>
+                    <span class="metric-value loss">$-575.48 (-287.74%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Profit Factor</span>
@@ -835,7 +861,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Max Drawdown</span>
-                    <span class="metric-value loss">4.73%</span>
+                    <span class="metric-value loss">$9.46 (4.73%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Total Trades</span>
@@ -856,7 +882,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Annual Return</span>
-                    <span class="metric-value loss">-4.1%</span>
+                    <span class="metric-value loss">$-501.27 (-250.63%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Profit Factor</span>
@@ -868,7 +894,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Max Drawdown</span>
-                    <span class="metric-value loss">4.12%</span>
+                    <span class="metric-value loss">$8.24 (4.12%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Total Trades</span>
@@ -889,7 +915,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Annual Return</span>
-                    <span class="metric-value loss">-3.6%</span>
+                    <span class="metric-value loss">$-436.18 (-218.09%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Profit Factor</span>
@@ -901,7 +927,7 @@
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Max Drawdown</span>
-                    <span class="metric-value loss">6.81%</span>
+                    <span class="metric-value loss">$14.10 (6.81%)</span>
                 </div>
                 <div class="metric-row">
                     <span class="metric-label">Total Trades</span>
@@ -1151,39 +1177,6 @@
         const tradeDetails = [{"symbol": "EURUSD", "type": "BUY", "trade_pnl": -4.98, "open_time": "2026-02-22 23:27"}, {"symbol": "EURJPY", "type": "BUY", "trade_pnl": 5.54, "open_time": "2026-02-23 07:27"}, {"symbol": "EURJPY", "type": "BUY", "trade_pnl": 5.91, "open_time": "2026-02-24 07:27"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": 6.93, "open_time": "2026-02-23 14:26"}, {"symbol": "GBPJPY", "type": "BUY", "trade_pnl": -8.24, "open_time": "2026-02-25 09:57"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -7.15, "open_time": "2026-02-22 23:27"}, {"symbol": "EURGBP", "type": "BUY", "trade_pnl": 3.2800000000000002, "open_time": "2026-02-26 17:57"}, {"symbol": "EURGBP", "type": "BUY", "trade_pnl": 3.16, "open_time": "2026-02-27 06:27"}, {"symbol": "GBPUSD", "type": "BUY", "trade_pnl": -6.95, "open_time": "2026-02-27 19:02"}, {"symbol": "EURUSD", "type": "BUY", "trade_pnl": -4.48, "open_time": "2026-02-27 14:56"}];
         window.tradeDetails = tradeDetails;
 
-        // Calculate global axis bounds across ALL versions for stable chart axes
-        function calculateGlobalAxisBounds() {
-            const allEquityData = [
-                ...(window.v1EquityData || []),
-                ...(window.v2EquityData || []),
-                ...(window.v3EquityData || []),
-                ...(window.v4EquityData || []),
-                ...(window.v5EquityData || []),
-                ...(window.v6EquityData || []),
-                ...(window.v7EquityData || [])
-            ];
-
-            if (allEquityData.length === 0) {
-                return { min: 0, max: 100 };
-            }
-
-            const allValues = allEquityData.map(p => p.cumulative_pnl);
-            const dataMin = Math.min(...allValues, 0);  // Include 0 as baseline
-            const dataMax = Math.max(...allValues, 0);
-
-            // Add 10% padding for visual breathing room
-            const range = dataMax - dataMin;
-            const padding = range * 0.1;
-
-            return {
-                min: Math.floor(dataMin - padding),
-                max: Math.ceil(dataMax + padding)
-            };
-        }
-
-        // Store global bounds for consistent axis scaling
-        window.globalAxisBounds = calculateGlobalAxisBounds();
-
         const ctx = document.getElementById('equityChart').getContext('2d');
         window.equityChart = new Chart(ctx, {
             type: 'line',
@@ -1260,8 +1253,7 @@
                         grid: { color: 'rgba(148, 163, 184, 0.1)' }
                     },
                     y: {
-                        min: window.globalAxisBounds.min,
-                        max: window.globalAxisBounds.max,
+                        afterFit: function(scale) { scale.width = 80; },
                         ticks: {
                             color: '#94a3b8',
                             callback: function(value) { return '$' + value.toFixed(2); }
@@ -1297,32 +1289,71 @@
             const maxWin = wins.length > 0 ? Math.max(...wins.map(t => t.pnl)) : 0;
             const maxLoss = losses.length > 0 ? Math.min(...losses.map(t => t.pnl)) : 0;
 
+            // Calculate days active for Est. Annual Return
+            let daysActive = 1;
+            if (trades.length >= 2) {
+                const sortedTrades = [...trades].sort((a, b) => new Date(a.close_time) - new Date(b.close_time));
+                const firstDate = new Date(sortedTrades[0].open_time);
+                const lastDate = new Date(sortedTrades[sortedTrades.length - 1].close_time);
+                daysActive = Math.max(1, Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)));
+            }
+
             return {
                 total_trades: total, tp_count: tps, sl_count: sls, win_rate: winRate,
                 net_pnl: netPnl, avg_win: avgWin, avg_loss: avgLoss,
-                profit_factor: profitFactor, max_win: maxWin, max_loss: maxLoss
+                profit_factor: profitFactor, max_win: maxWin, max_loss: maxLoss,
+                total_profit: grossProfit, total_loss: grossLoss, days_active: daysActive
             };
         }
         
         function updateMetricsCards(metrics) {
             const cards = document.querySelectorAll('.exec-card');
-            if (cards.length >= 8) {
+            const initialBalance = window.currentInitialBalance || 200;
+
+            if (cards.length >= 10) {
+                // Row 1: Total Trades, Total P&L, Total Gain, Avg Win, Max Win
+                // Row 2: Win Rate, Est. Annual Return, Total Loss, Avg Loss, Max Loss
+
+                // Card 0: Total Trades
                 cards[0].querySelector('.exec-card-value').textContent = metrics.total_trades;
 
-                const winRateEl = cards[1].querySelector('.exec-card-value');
-                winRateEl.textContent = metrics.win_rate.toFixed(1) + '%';
-                winRateEl.className = 'exec-card-value ' + (metrics.win_rate >= 50 ? 'profit' : 'loss');
-                cards[1].querySelector('.exec-card-subtitle').textContent = metrics.tp_count + ' TPs vs ' + metrics.sl_count + ' SLs';
-
-                const pnlEl = cards[2].querySelector('.exec-card-value');
+                // Card 1: Total P&L
+                const pnlEl = cards[1].querySelector('.exec-card-value');
                 pnlEl.textContent = '$' + metrics.net_pnl.toFixed(2);
                 pnlEl.className = 'exec-card-value ' + (metrics.net_pnl >= 0 ? 'profit' : 'loss');
 
-                cards[3].querySelector('.exec-card-value').textContent = metrics.profit_factor.toFixed(2);
-                cards[4].querySelector('.exec-card-value').textContent = '$' + metrics.avg_win.toFixed(2);
-                cards[5].querySelector('.exec-card-value').textContent = '$' + metrics.avg_loss.toFixed(2);
-                cards[6].querySelector('.exec-card-value').textContent = '$' + metrics.max_win.toFixed(2);
-                cards[7].querySelector('.exec-card-value').textContent = '$' + Math.abs(metrics.max_loss).toFixed(2);
+                // Card 2: Total Gain
+                cards[2].querySelector('.exec-card-value').textContent = '$' + metrics.total_profit.toFixed(2);
+
+                // Card 3: Avg Win
+                cards[3].querySelector('.exec-card-value').textContent = '$' + metrics.avg_win.toFixed(2);
+
+                // Card 4: Max Win
+                cards[4].querySelector('.exec-card-value').textContent = '$' + metrics.max_win.toFixed(2);
+
+                // Card 5: Win Rate
+                const winRateEl = cards[5].querySelector('.exec-card-value');
+                winRateEl.textContent = metrics.win_rate.toFixed(1) + '%';
+                winRateEl.className = 'exec-card-value ' + (metrics.win_rate >= 50 ? 'profit' : 'loss');
+                cards[5].querySelector('.exec-card-subtitle').textContent = metrics.tp_count + ' TPs vs ' + metrics.sl_count + ' SLs';
+
+                // Card 6: Est. Annual Return
+                const pnlPerDay = metrics.net_pnl / metrics.days_active;
+                const estAnnualValue = pnlPerDay * 365;
+                const estAnnualPct = (estAnnualValue / initialBalance) * 100;
+                const annualEl = cards[6].querySelector('.exec-card-value');
+                annualEl.textContent = '$' + estAnnualValue.toFixed(2);
+                annualEl.className = 'exec-card-value ' + (estAnnualValue >= 0 ? 'profit' : 'loss');
+                cards[6].querySelector('.exec-card-subtitle').textContent = estAnnualPct.toFixed(1) + '% of deposit';
+
+                // Card 7: Total Loss
+                cards[7].querySelector('.exec-card-value').textContent = '$' + metrics.total_loss.toFixed(2);
+
+                // Card 8: Avg Loss
+                cards[8].querySelector('.exec-card-value').textContent = '$' + metrics.avg_loss.toFixed(2);
+
+                // Card 9: Max Loss
+                cards[9].querySelector('.exec-card-value').textContent = '$' + Math.abs(metrics.max_loss).toFixed(2);
             }
         }
 
@@ -1457,6 +1488,18 @@
             const grid = document.getElementById('analysisCardsGrid');
             if (!grid) return;
 
+            // Calculate bot days active ONCE for all pairs (not per-pair)
+            // This ensures consistent Annual Return calculations
+            let botDaysActive = 1;
+            if (filteredTrades.length >= 2) {
+                const sortedAll = [...filteredTrades].sort((a, b) =>
+                    new Date(a.close_time) - new Date(b.close_time)
+                );
+                const botFirstDate = new Date(sortedAll[0].open_time);
+                const botLastDate = new Date(sortedAll[sortedAll.length - 1].close_time);
+                botDaysActive = Math.max(1, Math.ceil((botLastDate - botFirstDate) / (1000 * 60 * 60 * 24)));
+            }
+
             // Group trades by pair
             const byPair = {};
             filteredTrades.forEach(trade => {
@@ -1486,48 +1529,36 @@
                 const grossLoss = Math.abs(trades.filter(t => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0));
                 const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss) : (grossProfit > 0 ? 999.99 : 0);
 
-                // Calculate max drawdown as percentage of peak equity
+                // Calculate max drawdown as value AND percentage
                 const initialBalance = window.currentInitialBalance || 200;
                 let equity = initialBalance;
                 let peakEquity = initialBalance;
-                let maxDD = 0;
+                let maxDDValue = 0;
+                let maxDDPct = 0;
                 const sortedTradesDD = [...trades].sort((a, b) => new Date(a.close_time) - new Date(b.close_time));
                 sortedTradesDD.forEach(t => {
                     equity += t.pnl;
                     peakEquity = Math.max(peakEquity, equity);
-                    if (peakEquity > 0) {
-                        const dd = ((peakEquity - equity) / peakEquity) * 100;
-                        maxDD = Math.max(maxDD, dd);
+                    const ddValue = peakEquity - equity;
+                    if (ddValue > maxDDValue) {
+                        maxDDValue = ddValue;
+                        maxDDPct = peakEquity > 0 ? (ddValue / peakEquity) * 100 : 0;
                     }
                 });
 
-                // Calculate annual return as percentage (only annualize if >= 30 days)
-                let annualReturnPct = 0;
-                if (trades.length >= 2) {
-                    const sortedTradesAR = [...trades].sort((a, b) => new Date(a.close_time) - new Date(b.close_time));
-                    const firstDate = new Date(sortedTradesAR[0].close_time);
-                    const lastDate = new Date(sortedTradesAR[sortedTradesAR.length - 1].close_time);
-                    const daysDiff = Math.max(1, (lastDate - firstDate) / (1000 * 60 * 60 * 24));
-
-                    if (daysDiff >= 30) {
-                        // Annualize: (return %) * (365 / days)
-                        annualReturnPct = (netPnL / initialBalance) * (365 / daysDiff) * 100;
-                    } else {
-                        // For short periods, show actual return (not annualized)
-                        annualReturnPct = (netPnL / initialBalance) * 100;
-                    }
-                } else if (trades.length === 1) {
-                    // Single trade: show actual return
-                    annualReturnPct = (netPnL / initialBalance) * 100;
-                }
+                // Calculate Annual Return: P&L/day * 365 = value, then percentage
+                // Uses botDaysActive (not pair days) for consistent metrics
+                const pnlPerDay = netPnL / botDaysActive;
+                const annualReturnValue = pnlPerDay * 365;
+                const annualReturnPct = (annualReturnValue / initialBalance) * 100;
 
                 // Determine risk level
                 let riskLevel = 'Low';
                 let riskClass = 'low';
-                if (maxDD > 30 || winRate < 30) {
+                if (maxDDPct > 30 || winRate < 30) {
                     riskLevel = 'High';
                     riskClass = 'high';
-                } else if (maxDD > 15 || winRate < 45) {
+                } else if (maxDDPct > 15 || winRate < 45) {
                     riskLevel = 'Medium';
                     riskClass = 'medium';
                 }
@@ -1555,7 +1586,7 @@
                     </div>
                     <div class="metric-row">
                         <span class="metric-label">Annual Return</span>
-                        <span class="metric-value ${annualClass}">${annualReturnPct.toFixed(1)}%</span>
+                        <span class="metric-value ${annualClass}">$${annualReturnValue.toFixed(2)} (${annualReturnPct.toFixed(2)}%)</span>
                     </div>
                     <div class="metric-row">
                         <span class="metric-label">Profit Factor</span>
@@ -1567,7 +1598,7 @@
                     </div>
                     <div class="metric-row">
                         <span class="metric-label">Max Drawdown</span>
-                        <span class="metric-value loss">${maxDD.toFixed(2)}%</span>
+                        <span class="metric-value loss">$${maxDDValue.toFixed(2)} (${maxDDPct.toFixed(2)}%)</span>
                     </div>
                     <div class="metric-row">
                         <span class="metric-label">Total Trades</span>
